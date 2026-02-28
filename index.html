@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Retro Dev Launchers: Ultra Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; background: #010103; overflow: hidden; touch-action: none; font-family: 'Press Start 2P', cursive; }
+        canvas { display: block; image-rendering: pixelated; }
+        
+        #screen { position: relative; width: 100vw; height: 100vh; }
+        #screen::after {
+            content: " "; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+            background-size: 100% 4px; z-index: 10; pointer-events: none;
+        }
+
+        #ui {
+            position: absolute; top: 20px; width: 100%; text-align: center;
+            color: #33ff00; font-size: 14px; z-index: 5; text-shadow: 3px 3px #000;
+        }
+
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white; z-index: 20;
+        }
+
+        button {
+            padding: 25px 50px; font-family: 'Press Start 2P'; background: #33ff00;
+            border: 4px solid #fff; color: #000; cursor: pointer; font-size: 18px;
+            box-shadow: 8px 8px 0px #006600;
+        }
+        button:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0px #006600; }
+    </style>
+</head>
+<body>
+
+<div id="screen">
+    <div id="ui">LINES CODED: <span id="score">0</span> | TOP RECORD: <span id="best">0</span></div>
+    
+    <div id="overlay">
+        <h1 style="color: #33ff00; margin-bottom: 10px; font-size: 22px;">RETRO DEV</h1>
+        <p style="font-size: 10px; margin-bottom: 30px;">[ MUSIC & SFX ENABLED ]</p>
+        <button id="startBtn">BOOT SYSTEM</button>
+    </div>
+
+    <canvas id="game"></canvas>
+</div>
+
+<script>
+/** @type {HTMLCanvasElement} */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const startBtn = document.getElementById('startBtn');
+const overlay = document.getElementById('overlay');
+
+// Motor de Audio Avanzado
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let musicStarted = false;
+
+function playSound(freq, type, duration, vol = 0.1) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+
+// Generador de música 8-bit procedimental
+function startMusic() {
+    if(musicStarted) return;
+    musicStarted = true;
+    const notes = [261.63, 329.63, 392.00, 523.25]; // Acorde Do Mayor
+    let step = 0;
+    setInterval(() => {
+        if(!isPaused) {
+            // Bajo constante
+            playSound(130.81, 'sawtooth', 0.2, 0.05);
+            // Melodía aleatoria rítmica
+            if(step % 2 === 0) {
+                playSound(notes[Math.floor(Math.random() * notes.length)], 'triangle', 0.1, 0.03);
+            }
+            step++;
+        }
+    }, 200);
+}
+
+let width, height, player, obstacles, score, isPaused = true;
+let highscore = localStorage.getItem('retroDevUltraBest') || 0;
+document.getElementById('best').innerText = highscore;
+
+function init() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    score = 0;
+    player = { x: width * 0.15, y: height / 2, vy: 0, gravity: 0.45, jump: -7, size: 28 };
+    obstacles = [];
+    document.getElementById('score').innerText = score;
+}
+
+function update() {
+    if(isPaused) return;
+
+    ctx.fillStyle = '#010103';
+    ctx.fillRect(0, 0, width, height);
+
+    // Fondo: Estrellas estáticas
+    ctx.fillStyle = "#444";
+    for(let i=0; i<50; i++) ctx.fillRect((i*137)%width, (i*251)%height, 2, 2);
+
+    // Jugador
+    player.vy += player.gravity;
+    player.y += player.vy;
+    if(player.y < 0 || player.y > height) die();
+
+    ctx.fillStyle = '#33ff00';
+    ctx.fillRect(player.x, player.y, player.size, player.size);
+    ctx.strokeStyle = '#fff';
+    ctx.strokeRect(player.x+4, player.y+4, player.size-8, player.size-8);
+
+    // Lógica de Obstáculos
+    if(Math.random() < 0.02) {
+        let gap = 200 - Math.min(score * 2, 100);
+        obstacles.push({ x: width, top: Math.random() * (height - gap - 100), gap: gap, passed: false });
+    }
+
+    obstacles.forEach((obs, i) => {
+        obs.x -= 5 + (score/15);
+        ctx.fillStyle = '#ff0044';
+        ctx.fillRect(obs.x, 0, 50, obs.top);
+        ctx.fillRect(obs.x, obs.top + obs.gap, 50, height);
+
+        if(player.x + player.size > obs.x && player.x < obs.x + 50) {
+            if(player.y < obs.top || player.y + player.size > obs.top + obs.gap) die();
+        }
+
+        if(!obs.passed && obs.x < player.x) {
+            obs.passed = true;
+            score++;
+            document.getElementById('score').innerText = score;
+            playSound(880, 'square', 0.1, 0.05);
+        }
+        if(obs.x < -60) obstacles.splice(i, 1);
+    });
+
+    requestAnimationFrame(update);
+}
+
+function die() {
+    isPaused = true;
+    playSound(150, 'sawtooth', 0.6, 0.2);
+    if(score > highscore) {
+        highscore = score;
+        localStorage.setItem('retroDevUltraBest', highscore);
+        document.getElementById('best').innerText = highscore;
+    }
+    overlay.style.display = 'flex';
+    document.getElementById('startBtn').innerText = "RE-BOOT";
+}
+
+startBtn.onclick = () => {
+    audioCtx.resume();
+    startMusic();
+    init();
+    isPaused = false;
+    overlay.style.display = 'none';
+    update();
+};
+
+const handleJump = (e) => {
+    if(e) e.preventDefault();
+    if(!isPaused) {
+        player.vy = player.jump;
+        playSound(600, 'sine', 0.08, 0.08);
+    }
+};
+
+window.addEventListener('mousedown', handleJump);
+window.addEventListener('touchstart', handleJump, {passive: false});
+</script>
+</body>
+</html>

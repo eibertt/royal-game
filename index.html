@@ -3,185 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Retro Dev Launchers: Ultra Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; background: #010103; overflow: hidden; touch-action: none; font-family: 'Press Start 2P', cursive; }
-        canvas { display: block; image-rendering: pixelated; }
-        
-        #screen { position: relative; width: 100vw; height: 100vh; }
-        #screen::after {
-            content: " "; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-            background-size: 100% 4px; z-index: 10; pointer-events: none;
+        :root {
+            --neon-blue: #00d2ff;
+            --deep-blue: #06b6d4;
         }
 
-        #ui {
-            position: absolute; top: 20px; width: 100%; text-align: center;
-            color: #33ff00; font-size: 14px; z-index: 5; text-shadow: 3px 3px #000;
+        body {
+            background-color: #020617; /* Fondo ultra oscuro */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
         }
 
-        #overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: white; z-index: 20;
+        /* CONTENEDOR DEL PERSONAJE */
+        .character-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        button {
-            padding: 25px 50px; font-family: 'Press Start 2P'; background: #33ff00;
-            border: 4px solid #fff; color: #000; cursor: pointer; font-size: 18px;
-            box-shadow: 8px 8px 0px #006600;
+        /* EL DIAMANTE TITÁN */
+        .titan-diamond {
+            font-size: 140px;
+            filter: drop-shadow(0 0 25px var(--neon-blue));
+            animation: float 3s ease-in-out infinite;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
         }
-        button:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0px #006600; }
+
+        /* EFECTO DE RESPLANDOR TRASERO */
+        .glow-aura {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            animation: pulse-aura 2s infinite;
+        }
+
+        /* ANIMACIÓN DE LEVITACIÓN */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* ANIMACIÓN DE PULSO */
+        @keyframes pulse-aura {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.3); opacity: 0.8; }
+        }
+
+        /* EFECTO AL TOCAR */
+        .character-container:active .titan-diamond {
+            transform: scale(0.85);
+            filter: drop-shadow(0 0 50px #fff);
+        }
+
+        /* NÚMERO FLOTANTE (+0.15) */
+        .floating-text {
+            position: absolute;
+            color: #fff;
+            font-weight: 800;
+            font-size: 24px;
+            pointer-events: none;
+            animation: rise-up 0.8s ease-out forwards;
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        @keyframes rise-up {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-120px); opacity: 0; }
+        }
     </style>
 </head>
 <body>
 
-<div id="screen">
-    <div id="ui">LINES CODED: <span id="score">0</span> | TOP RECORD: <span id="best">0</span></div>
-    
-    <div id="overlay">
-        <h1 style="color: #33ff00; margin-bottom: 10px; font-size: 22px;">RETRO DEV</h1>
-        <p style="font-size: 10px; margin-bottom: 30px;">[ MUSIC & SFX ENABLED ]</p>
-        <button id="startBtn">BOOT SYSTEM</button>
+    <div class="character-container" onclick="handleTap(event)">
+        <div class="glow-aura"></div>
+        <div class="titan-diamond" id="hero">💎</div>
     </div>
 
-    <canvas id="game"></canvas>
-</div>
+    <script>
+        function handleTap(e) {
+            // Crear el texto flotante "+0.15"
+            const text = document.createElement('div');
+            text.innerText = "+0.15";
+            text.className = 'floating-text';
+            
+            // Posicionar donde se hizo el toque (relativo al contenedor)
+            const rect = e.currentTarget.getBoundingClientRect();
+            text.style.left = (e.clientX - rect.left) + 'px';
+            text.style.top = (e.clientY - rect.top) + 'px';
+            
+            e.currentTarget.appendChild(text);
 
-<script>
-/** @type {HTMLCanvasElement} */
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-const startBtn = document.getElementById('startBtn');
-const overlay = document.getElementById('overlay');
-
-// Motor de Audio Avanzado
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let musicStarted = false;
-
-function playSound(freq, type, duration, vol = 0.1) {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
-}
-
-// Generador de música 8-bit procedimental
-function startMusic() {
-    if(musicStarted) return;
-    musicStarted = true;
-    const notes = [261.63, 329.63, 392.00, 523.25]; // Acorde Do Mayor
-    let step = 0;
-    setInterval(() => {
-        if(!isPaused) {
-            // Bajo constante
-            playSound(130.81, 'sawtooth', 0.2, 0.05);
-            // Melodía aleatoria rítmica
-            if(step % 2 === 0) {
-                playSound(notes[Math.floor(Math.random() * notes.length)], 'triangle', 0.1, 0.03);
+            // Vibración (si es Telegram Web App)
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
             }
-            step++;
+
+            // Eliminar el texto después de la animación
+            setTimeout(() => {
+                text.remove();
+            }, 800);
         }
-    }, 200);
-}
-
-let width, height, player, obstacles, score, isPaused = true;
-let highscore = localStorage.getItem('retroDevUltraBest') || 0;
-document.getElementById('best').innerText = highscore;
-
-function init() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-    score = 0;
-    player = { x: width * 0.15, y: height / 2, vy: 0, gravity: 0.45, jump: -7, size: 28 };
-    obstacles = [];
-    document.getElementById('score').innerText = score;
-}
-
-function update() {
-    if(isPaused) return;
-
-    ctx.fillStyle = '#010103';
-    ctx.fillRect(0, 0, width, height);
-
-    // Fondo: Estrellas estáticas
-    ctx.fillStyle = "#444";
-    for(let i=0; i<50; i++) ctx.fillRect((i*137)%width, (i*251)%height, 2, 2);
-
-    // Jugador
-    player.vy += player.gravity;
-    player.y += player.vy;
-    if(player.y < 0 || player.y > height) die();
-
-    ctx.fillStyle = '#33ff00';
-    ctx.fillRect(player.x, player.y, player.size, player.size);
-    ctx.strokeStyle = '#fff';
-    ctx.strokeRect(player.x+4, player.y+4, player.size-8, player.size-8);
-
-    // Lógica de Obstáculos
-    if(Math.random() < 0.02) {
-        let gap = 200 - Math.min(score * 2, 100);
-        obstacles.push({ x: width, top: Math.random() * (height - gap - 100), gap: gap, passed: false });
-    }
-
-    obstacles.forEach((obs, i) => {
-        obs.x -= 5 + (score/15);
-        ctx.fillStyle = '#ff0044';
-        ctx.fillRect(obs.x, 0, 50, obs.top);
-        ctx.fillRect(obs.x, obs.top + obs.gap, 50, height);
-
-        if(player.x + player.size > obs.x && player.x < obs.x + 50) {
-            if(player.y < obs.top || player.y + player.size > obs.top + obs.gap) die();
-        }
-
-        if(!obs.passed && obs.x < player.x) {
-            obs.passed = true;
-            score++;
-            document.getElementById('score').innerText = score;
-            playSound(880, 'square', 0.1, 0.05);
-        }
-        if(obs.x < -60) obstacles.splice(i, 1);
-    });
-
-    requestAnimationFrame(update);
-}
-
-function die() {
-    isPaused = true;
-    playSound(150, 'sawtooth', 0.6, 0.2);
-    if(score > highscore) {
-        highscore = score;
-        localStorage.setItem('retroDevUltraBest', highscore);
-        document.getElementById('best').innerText = highscore;
-    }
-    overlay.style.display = 'flex';
-    document.getElementById('startBtn').innerText = "RE-BOOT";
-}
-
-startBtn.onclick = () => {
-    audioCtx.resume();
-    startMusic();
-    init();
-    isPaused = false;
-    overlay.style.display = 'none';
-    update();
-};
-
-const handleJump = (e) => {
-    if(e) e.preventDefault();
-    if(!isPaused) {
-        player.vy = player.jump;
-        playSound(600, 'sine', 0.08, 0.08);
-    }
-};
-
-window.addEventListener('mousedown', handleJump);
-window.addEventListener('touchstart', handleJump, {passive: false});
-</script>
+    </script>
 </body>
 </html>

@@ -40,10 +40,18 @@
         </nav>
     </div>
 
-            <script src="game_logic.js?v=2"></script>
-    <script src="casino_logic.js?v=2"></script>
-    <script src="referrals.js?v=2"></script>
-    <script src="wallet_system.js?v=2"></script>
+                <script>
+        console.log("Iniciando carga de módulos TITAN B...");
+        window.onerror = function(msg, url, line) {
+            alert("ERROR DETECTADO: " + msg + " en " + url + " LÍNEA: " + line);
+        };
+    </script>
+
+    <script src="game_logic.js?v=3"></script>
+    <script src="casino_logic.js?v=3"></script>
+    <script src="referrals.js?v=3"></script>
+    <script src="wallet_system.js?v=3"></script>
+
 
 
 

@@ -97,6 +97,28 @@
             renderer.render(scene, camera);
         }
         animate();
-    </script>
+    </script>// --- EL TRUCO PARA QUE EL ROBOT SE DESCARGUE SOLO ---
+const loader = new THREE.GLTFLoader();
+
+// Enlace directo al modelo (Almacenado en GitHub de Khronos Group)
+const modelURL = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RobotArm/glTF-Binary/RobotArm.glb';
+
+loader.load(
+    modelURL, 
+    (gltf) => {
+        const robot = gltf.scene;
+        robot.scale.set(2, 2, 2); // Ajusta el tamaño
+        robot.position.y = -1;    // Ajusta la altura
+        scene.add(robot);
+        
+        // Animación de bienvenida
+        gsap.from(robot.scale, { x: 0, y: 0, z: 0, duration: 1.5, ease: "expo.out" });
+        console.log("¡Robot B descargado e instalado con éxito!");
+    },
+    (xhr) => {
+        // Esto muestra el progreso de la "descarga automática" en la consola
+        console.log( (xhr.loaded / xhr.total * 100) + '% descargado' );
+    }
+);
 </body>
 </html>

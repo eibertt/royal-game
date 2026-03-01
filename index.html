@@ -3,49 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TITAN B: REVOLUTION</title>
+    <title>TITAN B: INTRO FIX</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
         
-        /* VIDEO DE FONDO INFINITO */
-        #bg-video {
+        /* VIDEO DE INTRO/FONDO */
+        #video-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: -1; filter: brightness(0.5);
+            z-index: -1; background: #000;
         }
+        #bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); }
 
-        /* INTERFAZ DEL JUEGO */
-        #gui { position: absolute; top: 20px; left: 20px; z-index: 10; pointer-events: none; color: #00f2ff; text-shadow: 0 0 10px #000; }
-        .bar-bg { width: 180px; height: 12px; border: 1px solid #00f2ff; margin-top: 10px; background: rgba(0,0,0,0.5); border-radius: 5px; overflow: hidden; }
-        #energy-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #00f2ff, #0077ff); transition: 0.3s; }
+        /* INTERFAZ */
+        #gui { position: absolute; top: 20px; left: 20px; z-index: 10; color: #00f2ff; pointer-events: none; }
+        .bar-bg { width: 180px; height: 10px; border: 1px solid #00f2ff; margin-top: 10px; background: rgba(0,0,0,0.5); }
+        #energy-bar { width: 100%; height: 100%; background: #00f2ff; }
         
-        /* EFECTO DE CLIC */
-        .floating-text { position: absolute; color: #fff; font-weight: bold; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 20; }
-        @keyframes floatUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-80px); opacity: 0; } }
-        
-        #rank { font-size: 12px; letter-spacing: 2px; margin-top: 5px; color: #fff; }
+        /* BOTÓN DE ARRANQUE (Solo sale si el video no arranca solo) */
+        #start-prompt {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #00f2ff; border: 2px solid #00f2ff; padding: 20px;
+            background: rgba(0,0,0,0.8); cursor: pointer; z-index: 200;
+        }
     </style>
 </head>
 <body>
 
-    <video id="bg-video" autoplay loop muted playsinline>
-        <source src="fondo.mp4" type="video/mp4">
-    </video>
+    <div id="start-prompt" onclick="iniciarTodo()">TOCA PARA INICIAR SISTEMA</div>
 
-    <div id="gui">
-        <h1 style="margin:0; font-size:22px;">TITAN B: EVOLUTION</h1>
-        <p style="margin:5px 0;">T-COINS: <span id="coin-txt" style="font-weight:bold; font-size:1.2em;">0</span></p>
+    <div id="video-container">
+        <video id="bg-video" loop muted playsinline>
+            <source src="intro.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div id="gui" style="display:none;">
+        <h1>TITAN B: REVOLUTION</h1>
+        <p>T-COINS: <span id="coin-txt">0</span></p>
         <div class="bar-bg"><div id="energy-bar"></div></div>
-        <p id="rank">RANGO: RECLUTA</p>
     </div>
 
     <script>
-        // --- CONFIGURACIÓN INICIAL ---
+        function iniciarTodo() {
+            document.getElementById('start-prompt').style.display = 'none';
+            document.getElementById('gui').style.display = 'block';
+            const v = document.getElementById('bg-video');
+            v.play();
+        }
+
+        // --- MOTOR DEL JUEGO ---
         let coins = parseInt(localStorage.getItem('tcoins')) || 0;
         let energy = 100;
-        let currentTier = 1;
-
-        // MOTOR 3D TRANSPARENTE
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -54,81 +63,32 @@
 
         scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 
-        // CARGADOR DE ROBOTS
         const textureLoader = new THREE.TextureLoader();
-        let robotSprite;
-
-        function cargarRobot(num) {
-            textureLoader.load(`robot${num}.png`, (texture) => {
-                if (robotSprite) scene.remove(robotSprite);
-                const material = new THREE.SpriteMaterial({ map: texture });
-                robotSprite = new THREE.Sprite(material);
-                robotSprite.scale.set(4.5, 4.5, 1);
-                scene.add(robotSprite);
-            });
-        }
-        cargarRobot(1);
-
-        // LÓGICA DE MINERÍA
-        window.addEventListener('mousedown', (e) => {
-            if(energy >= 5) {
-                energy -= 5;
-                coins += 10;
-                localStorage.setItem('tcoins', coins);
-                
-                // Efecto visual +10
-                const text = document.createElement('div');
-                text.className = 'floating-text';
-                text.innerText = '+10';
-                text.style.left = e.clientX + 'px';
-                text.style.top = e.clientY + 'px';
-                document.body.appendChild(text);
-                setTimeout(() => text.remove(), 800);
-
-                // Animación de impacto
-                if(robotSprite) {
-                    robotSprite.scale.set(4.8, 4.8, 1);
-                    setTimeout(() => robotSprite.scale.set(4.5, 4.5, 1), 100);
-                }
-                actualizarProgreso();
-            }
+        let robot;
+        // Cargamos tu NANO SAGE (robot1.png)
+        textureLoader.load('robot1.png', (tex) => {
+            const mat = new THREE.SpriteMaterial({ map: tex });
+            robot = new THREE.Sprite(mat);
+            robot.scale.set(4.5, 4.5, 1);
+            scene.add(robot);
         });
 
-        function actualizarProgreso() {
-            document.getElementById('coin-txt').innerText = coins;
-            document.getElementById('energy-bar').style.width = energy + "%";
-
-            // Evolución por monedas
-            if (coins >= 500 && currentTier < 3) {
-                currentTier = 3; cargarRobot(3);
-                document.getElementById('rank').innerText = "RANGO: TITÁN";
-            } else if (coins >= 100 && currentTier < 2) {
-                currentTier = 2; cargarRobot(2);
-                document.getElementById('rank').innerText = "RANGO: AVANZADO";
+        window.addEventListener('mousedown', () => {
+            if(energy >= 5) {
+                energy -= 5; coins += 10;
+                localStorage.setItem('tcoins', coins);
+                document.getElementById('coin-txt').innerText = coins;
+                document.getElementById('energy-bar').style.width = energy + "%";
             }
-        }
-
-        // Recuperación de energía
-        setInterval(() => { if(energy < 100) { energy += 1; actualizarProgreso(); } }, 1200);
+        });
 
         camera.position.z = 5;
         function animate() {
             requestAnimationFrame(animate);
-            if(robotSprite) {
-                robotSprite.position.y = Math.sin(Date.now() * 0.002) * 0.1;
-                robotSprite.position.x = Math.cos(Date.now() * 0.001) * 0.05;
-            }
+            if(robot) robot.position.y = Math.sin(Date.now() * 0.002) * 0.1;
             renderer.render(scene, camera);
         }
         animate();
-        actualizarProgreso();
-
-        // Ajuste de pantalla
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth/window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>

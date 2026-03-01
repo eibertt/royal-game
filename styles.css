@@ -1,10 +1,18 @@
-/* --- CONFIGURACIÓN HOLOGRÁFICA TITAN B --- */
+/* TITAN B - SISTEMA OPERATIVO DE CABINA (Socio Edition)
+   Archivo: styles.css 
+*/
+
 :root {
     --hologram-blue: #00e5ff;
     --hologram-pink: #ff00de;
     --gold: #ffcc00;
-    --neon-glow: 0 0 10px var(--hologram-blue), 0 0 20px var(--hologram-blue);
-    --critical-glow: 0 0 15px #ff4444, 0 0 30px #ff4444;
+    --neon-glow: 0 0 15px var(--hologram-blue);
+    --critical-glow: 0 0 20px #ff4444;
+}
+
+* {
+    box-sizing: border-box;
+    user-select: none;
 }
 
 body, html {
@@ -14,55 +22,109 @@ body, html {
     height: 100%;
     overflow: hidden;
     background-color: #000;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Courier New', Courier, monospace;
 }
 
-/* El video de fondo que tienes en tu repo */
+/* Fondo Dinámico usando fondo.mp4 del repositorio */
 #bg-video {
     position: fixed;
-    right: 0;
-    bottom: 0;
+    top: 50%;
+    left: 50%;
     min-width: 100%;
     min-height: 100%;
-    z-index: -1;
-    filter: brightness(0.4) contrast(1.2);
+    width: auto;
+    height: auto;
+    z-index: -100;
+    transform: translateX(-50%) translateY(-50%);
+    filter: brightness(0.3) contrast(1.1);
 }
 
-/* Efecto Glassmorphism para los paneles */
+/* Capa de Escaneo Holográfico */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.05),
+        rgba(0, 0, 0, 0.05) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+}
+
+/* Paneles de Cristal (Glassmorphism) */
 .hologram-panel {
-    background: rgba(0, 229, 255, 0.05);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(0, 229, 255, 0.3);
+    background: rgba(0, 229, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 229, 255, 0.2);
     box-shadow: var(--neon-glow);
-    border-radius: 15px;
+    border-radius: 12px;
     color: var(--hologram-blue);
-    text-shadow: 0 0 5px var(--hologram-blue);
-    padding: 20px;
-    margin: 10px;
+    text-shadow: 0 0 8px var(--hologram-blue);
 }
 
-/* El Robot Central con brillo */
+/* Contenedor del Robot */
+.robot-core {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 60vh;
+}
+
 #robot-display {
-    width: 250px;
-    transition: transform 0.1s, filter 0.3s;
-    filter: drop-shadow(0 0 10px var(--hologram-blue));
+    width: 280px;
+    z-index: 10;
+    filter: drop-shadow(0 0 15px var(--hologram-blue));
+    transition: transform 0.05s ease;
 }
 
-/* Animación de pulsación para el anillo de calor */
-@keyframes pulse-heat {
-    0% { transform: scale(1); opacity: 0.6; }
-    50% { transform: scale(1.05); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.6; }
+#robot-display:active {
+    transform: scale(0.95);
 }
 
-#heat-ring {
+/* Anillo de Calor/Energía */
+.energy-ring {
     position: absolute;
-    border: 4px solid var(--hologram-blue);
+    width: 320px;
+    height: 320px;
+    border: 2px solid rgba(0, 229, 255, 0.1);
+    border-top: 4px solid var(--hologram-blue);
     border-radius: 50%;
-    animation: pulse-heat 2s infinite ease-in-out;
+    animation: rotate 4s linear infinite;
 }
 
-/* El Aura Verde para usuarios verificados (0.1 TON) */
-.verified-aura {
-    filter: drop-shadow(0 0 15px #00ff88) !important;
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Navegación Inferior Neo-Cyber */
+.nav-bar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 70px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.8);
+    border-top: 2px solid var(--hologram-blue);
+}
+
+.nav-item {
+    color: var(--hologram-blue);
+    font-size: 0.7rem;
+    text-align: center;
+    opacity: 0.6;
+    transition: 0.3s;
+}
+
+.nav-item.active {
+    opacity: 1;
+    text-shadow: var(--neon-glow);
 }

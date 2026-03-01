@@ -3,71 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TITAN B - SISTEMA OPERATIVO</title>
+    <title>TITAN B - ODYSSEY 3D</title>
     <link rel="stylesheet" href="./styles.css">
+    <style>
+        /* Ajuste rápido para que el video y el 3D convivan */
+        #bg-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -1;
+            filter: brightness(0.4);
+        }
+        #robot-container canvas {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
 
     <video autoplay muted loop id="bg-video">
-        <source src="./assets/fondo.mp4" type="video/mp4">
+        <source src="./fondo.mp4" type="video/mp4">
     </video>
 
     <div class="overlay"></div>
 
     <div id="game-container">
-        <div class="hologram-panel" style="display: flex; justify-content: space-between; padding: 15px; margin: 15px;">
+        <div class="hologram-panel" style="display: flex; justify-content: space-between; padding: 15px; margin: 10px; border: 1px solid #00e5ff;">
             <div>
-                <small style="color: #ff00de">T-COINS</small>
-                <div id="coin-balance" style="font-size: 1.8rem; font-weight: bold;">0</div>
+                <small style="color: #ff00de">T-COINS BALANCE</small>
+                <div id="coin-balance" style="font-size: 1.8rem; font-weight: bold; text-shadow: 0 0 10px #00e5ff;">0</div>
             </div>
             <div style="text-align: right;">
-                <small>RANGO ACTUAL</small>
-                <div id="rank-display" style="color: #00e5ff;">RECLUTA</div>
+                <small>ESTADO DEL NÚCLEO</small>
+                <div id="system-status" style="color: #00ff88; font-weight: bold;">ESTABLE</div>
             </div>
         </div>
 
-        <div id="robot-container" style="width: 100%; height: 350px; margin: 20px 0; position: relative; z-index: 5;" onclick="if(window.handleRobotTap) window.handleRobotTap(); if(typeof handleTap === 'function') handleTap(event);">
+        <div id="robot-container" style="width: 100%; height: 380px; position: relative; z-index: 5;" onclick="if(window.handleRobotTap) window.handleRobotTap();">
             </div>
 
-        <div class="hologram-panel" style="margin: 15px; padding: 10px;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-                <span>ESTADO: <span id="system-status" style="color: #00e5ff;">VINCULANDO VERCEL...</span></span>
-                <span id="xp-text">XP: 0 / 4500</span>
+        <div class="hologram-panel" style="margin: 10px; padding: 10px; background: rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 5px;">
+                <span>RANGO: <b id="rank-display" style="color:#ffcc00;">RECLUTA</b></span>
+                <span id="xp-text">SINCRO: 0%</span>
             </div>
-            <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; margin-top: 5px; border: 1px solid #00e5ff;">
-                <div id="xp-bar" style="width: 0%; height: 100%; background: #00e5ff; box-shadow: 0 0 15px #00e5ff;"></div>
+            <div style="width: 100%; height: 6px; background: #111; border: 1px solid #00e5ff; border-radius: 3px;">
+                <div id="xp-bar" style="width: 5%; height: 100%; background: #00e5ff; box-shadow: 0 0 10px #00e5ff;"></div>
             </div>
         </div>
 
-        <nav class="nav-bar">
+        <nav class="nav-bar" style="background: rgba(0,10,20,0.8); backdrop-filter: blur(10px);">
             <div class="nav-item active" onclick="location.reload()">HOME</div>
             <div class="nav-item" onclick="jugarRuleta()">CASINO</div>
-            <div class="nav-item" style="color: #ffcc00; font-weight: bold;" onclick="abrirTienda()">SHIPS</div>
+            <div class="nav-item" style="color: #ffcc00;" onclick="abrirTienda()">SHIPS</div>
             <div class="nav-item" onclick="reclamarBonoReferido()">FRIENDS</div>
             <div class="nav-item" onclick="conectarBilletera()">WALLET</div>
         </nav>
     </div>
 
-    <script type="module" src="./robot_3d.js?v=13"></script>
-    <script src="./config.js?v=13"></script>
-    <script src="./render_engine.js?v=13"></script>
-    <script src="./game_logic.js?v=13"></script>
-    <script src="./casino_logic.js?v=13"></script>
-    <script src="./referrals.js?v=13"></script>
-    <script src="./wallet_system.js?v=13"></script>
+    <script type="module" src="./robot_3d.js?v=15"></script>
+    
+    <script src="./config.js?v=15"></script>
+    <script src="./audio_engine.js?v=15"></script>
+    <script src="./vfx_system.js?v=15"></script>
+    
+    <script src="./game_logic.js?v=15"></script>
+    <script src="./casino_logic.js?v=15"></script>
+    <script src="./referrals.js?v=15"></script>
+    <script src="./wallet_system.js?v=15"></script>
 
     <script>
-        window.onload = function() {
-            console.log("TITAN B: Sistemas Vercel-Ready.");
-            const status = document.getElementById('system-status');
-            if(status) {
-                status.innerText = "ONLINE";
-                status.style.color = "#00ff88";
-            }
-        };
-
+        // Función de Tienda con los datos de tu economía
         function abrirTienda() {
-            alert("--- ASTILLERO IMPERIAL ---\n\n1. Scout C-1: $1 USDT\n2. Heavy Miner: $5 USDT\n3. TITAN A-15: $15 USDT");
+            const menu = `--- ASTILLERO TITAN B ---
+1. Scout C-1 ($1 USDT): +100 T-Coins/hr
+2. Heavy Miner ($5 USDT): +600 T-Coins/hr
+3. TITAN A-15 ($15 USDT): +2500 T-Coins/hr
+
+¿Deseas adquirir una unidad de minado?`;
+            alert(menu);
         }
     </script>
 </body>

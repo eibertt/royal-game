@@ -2,123 +2,99 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TITAN B - ENDGAME</title>
+    <title>TITAN B: REVOLUTION</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; color: white; }
-        #ui-top { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 20px; box-sizing: border-box; z-index: 100; }
-        .panel { background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; padding: 10px; backdrop-filter: blur(10px); }
-        
-        /* BOSS HP BAR */
-        #boss-ui { position: absolute; top: 80px; width: 100%; text-align: center; z-index: 100; }
-        .hp-bar { width: 300px; height: 10px; background: #333; margin: 10px auto; border-radius: 5px; overflow: hidden; }
-        .hp-fill { width: 100%; height: 100%; background: #ff0055; box-shadow: 0 0 10px #ff0055; transition: 0.2s; }
-
-        /* FOOTER ACTIONS */
-        #footer { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 20px; z-index: 100; }
-        .btn-action { background: #000; border: 2px solid #00f2ff; color: #00f2ff; padding: 15px 30px; cursor: pointer; font-weight: 900; transition: 0.3s; }
-        .btn-action:hover { background: #00f2ff; color: #000; box-shadow: 0 0 20px #00f2ff; }
-        .btn-ton { border-color: #0088cc; color: #0088cc; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
+        #hud { position: absolute; top: 20px; left: 20px; color: #00f2ff; z-index: 10; pointer-events: none; }
+        .energy-bar { width: 200px; height: 10px; border: 1px solid #00f2ff; margin-top: 10px; }
+        #energy-fill { height: 100%; background: #00f2ff; width: 100%; transition: 0.3s; box-shadow: 0 0 10px #00f2ff; }
+        #header { position: absolute; top: 10px; width: 100%; text-align: center; color: #00f2ff; text-shadow: 0 0 10px #00f2ff; }
     </style>
 </head>
 <body>
 
-    <div id="ui-top">
-        <div class="panel">CLAN: TITAN_FORCE [x1.5 Bonus]</div>
-        <div class="panel">WALLET: <span id="balance">0.00</span> T-COINS</div>
-    </div>
-
-    <div id="boss-ui">
-        <p style="color: #ff0055; font-size: 10px; letter-spacing: 5px;">ANOMALÍA DETECTADA</p>
-        <div class="hp-bar"><div id="hp-fill" class="hp-fill"></div></div>
-    </div>
-
-    <div id="footer">
-        <button class="btn-action" onclick="attackBoss()">ATAQUE LÁSER</button>
-        <button class="btn-action btn-ton" onclick="exchangeCoins()">WITHDRAW TO TON</button>
+    <div id="header"><h1>TITAN B: REVOLUTION</h1></div>
+    
+    <div id="hud">
+        <p>T-COINS: <span id="coin-val">0</span></p>
+        <p>ENERGÍA: <span id="energy-text">100</span>%</p>
+        <div class="energy-bar"><div id="energy-fill"></div></div>
+        <p style="font-size: 10px; margin-top: 20px;">CLICK PARA DISPARAR LÁSER</p>
     </div>
 
     <script>
         let coins = 0;
-        let bossHP = 100;
+        let energy = 100;
 
-        // --- LÓGICA DE JUEGO ---
-        function attackBoss() {
-            if(bossHP <= 0) return;
-            bossHP -= 2;
-            coins += 0.5 * 1.5; // Ganancia + bono de clan
-            updateUI();
-            
-            // Efecto visual: Sacudida de cámara
-            camera.position.x += (Math.random() - 0.5) * 0.2;
-            setTimeout(() => camera.position.x = 0, 50);
-        }
-
-        function updateUI() {
-            document.getElementById('balance').innerText = coins.toFixed(2);
-            document.getElementById('hp-fill').style.width = bossHP + "%";
-            if(bossHP <= 0) {
-                document.querySelector('#boss-ui p').innerText = "METEORITO DESTRUIDO - PREMIO RECLAMADO";
-            }
-        }
-
-        function exchangeCoins() {
-            if(coins < 10) {
-                alert("Mínimo de retiro: 10 T-COINS");
-            } else {
-                alert("Conectando con TON Wallet... Enviando " + (coins/10).toFixed(2) + " TON");
-                coins = 0;
-                updateUI();
-            }
-        }
-
-        // --- RENDER 3D (CORE) ---
+        // Configuración de Escena 3D
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // El Boss (Meteorito)
-        const bossGeo = new THREE.IcosahedronGeometry(2, 0);
-        const bossMat = new THREE.MeshStandardMaterial({ color: 0xff0055, wireframe: true });
-        const boss = new THREE.Mesh(bossGeo, bossMat);
-        scene.add(boss);
+        // Fondo de Galaxia
+        const starGeo = new THREE.BufferGeometry();
+        const starCoords = [];
+        for(let i=0; i<2000; i++) {
+            starCoords.push(THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100));
+        }
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.05 })));
 
-        scene.add(new THREE.PointLight(0xff0055, 2, 50));
-        scene.add(new THREE.AmbientLight(0x404040, 1));
-        camera.position.z = 8;
+        scene.add(new THREE.AmbientLight(0xffffff, 1));
+        camera.position.z = 5;
+
+        // CARGA DEL ROBOT (Descarga automática)
+        const loader = new THREE.GLTFLoader();
+        let robot;
+        loader.load('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RobotArm/glTF-Binary/RobotArm.glb', (gltf) => {
+            robot = gltf.scene;
+            robot.scale.set(2, 2, 2);
+            robot.position.y = -1.5;
+            scene.add(robot);
+        });
+
+        // Lógica de Disparo y Monedas
+        window.addEventListener('mousedown', () => {
+            if(energy >= 5) {
+                energy -= 5;
+                coins += 10;
+                updateUI();
+                createLaser();
+            }
+        });
+
+        function createLaser() {
+            const laser = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.02, 0.02, 10),
+                new THREE.MeshBasicMaterial({ color: 0x00f2ff })
+            );
+            laser.rotation.x = Math.PI / 2;
+            scene.add(laser);
+            setTimeout(() => scene.remove(laser), 100);
+        }
+
+        function updateUI() {
+            document.getElementById('coin-val').innerText = coins;
+            document.getElementById('energy-text').innerText = energy;
+            document.getElementById('energy-fill').style.width = energy + "%";
+        }
+
+        // Recuperación de Energía
+        setInterval(() => { if(energy < 100) { energy += 1; updateUI(); } }, 2000);
 
         function animate() {
             requestAnimationFrame(animate);
-            boss.rotation.x += 0.01;
-            boss.rotation.y += 0.01;
+            if(robot) robot.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
         animate();
-    </script>// --- EL TRUCO PARA QUE EL ROBOT SE DESCARGUE SOLO ---
-const loader = new THREE.GLTFLoader();
-
-// Enlace directo al modelo (Almacenado en GitHub de Khronos Group)
-const modelURL = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RobotArm/glTF-Binary/RobotArm.glb';
-
-loader.load(
-    modelURL, 
-    (gltf) => {
-        const robot = gltf.scene;
-        robot.scale.set(2, 2, 2); // Ajusta el tamaño
-        robot.position.y = -1;    // Ajusta la altura
-        scene.add(robot);
-        
-        // Animación de bienvenida
-        gsap.from(robot.scale, { x: 0, y: 0, z: 0, duration: 1.5, ease: "expo.out" });
-        console.log("¡Robot B descargado e instalado con éxito!");
-    },
-    (xhr) => {
-        // Esto muestra el progreso de la "descarga automática" en la consola
-        console.log( (xhr.loaded / xhr.total * 100) + '% descargado' );
-    }
-);
+    </script>
 </body>
 </html>

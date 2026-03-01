@@ -2,133 +2,61 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TITAN B: REVOLUTION</title>
+    <title>TITAN B: DRIVE TEST</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
-    
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; color: #00f2ff; }
-        #gui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        .hud-element { position: absolute; pointer-events: auto; background: rgba(0, 0, 0, 0.6); padding: 15px; border: 1px solid #00f2ff; box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
-        #stats { top: 20px; left: 20px; }
-        #header { top: 10px; width: 100%; text-align: center; border: none; background: none; }
-        .energy-bar { width: 150px; height: 8px; border: 1px solid #00f2ff; margin-top: 5px; }
-        #energy-fill { height: 100%; background: #00f2ff; width: 100%; transition: 0.3s; box-shadow: 0 0 10px #00f2ff; }
-        h1 { margin: 0; font-size: 24px; letter-spacing: 4px; text-shadow: 0 0 15px #00f2ff; }
-        #click-hint { bottom: 20px; width: 100%; text-align: center; font-size: 10px; opacity: 0.6; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #00f2ff; z-index: 10; }
     </style>
 </head>
 <body>
-
-    <div id="gui">
-        <div id="header" class="hud-element"><h1>TITAN B: REVOLUTION</h1></div>
-        
-        <div id="stats" class="hud-element">
-            <p style="margin: 0;">T-COINS: <span id="coins">0</span></p>
-            <p style="margin: 10px 0 0 0; font-size: 12px;">ENERGÍA: <span id="nrg-txt">100</span>%</p>
-            <div class="energy-bar"><div id="energy-fill"></div></div>
-        </div>
-
-        <div id="click-hint">TOCA AL ROBOT PARA MINAR</div>
+    <div id="ui">
+        <h1>SISTEMA EN LÍNEA</h1>
+        <p>ARCHIVO DRIVE DETECTADO</p>
     </div>
 
     <script>
-        // --- 1. CONFIGURACIÓN DEL UNIVERSO ---
-        let coins = 0;
-        let energy = 100;
+        // --- CONFIGURACIÓN DE TU ENLACE ---
+        const DRIVE_ID = '1mYO2_VCIEtHCicwIS76nSmoP8bMyNaAD';
+        const directLink = `https://docs.google.com/uc?export=download&id=${DRIVE_ID}`;
 
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
 
-        // ILUMINACIÓN PROFESIONAL
-        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-        const sun = new THREE.DirectionalLight(0x00f2ff, 1.2);
-        sun.position.set(5, 5, 5);
-        scene.add(sun);
-
-        // FONDO DE ESTRELLAS ANIMADAS
-        const starGeo = new THREE.BufferGeometry();
-        const starPos = [];
-        for(let i=0; i<3000; i++) {
-            starPos.push(THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100));
-        }
-        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.05 }));
-        scene.add(stars);
-
-        // --- 2. EL ROBOT (DESCARGA AUTOMÁTICA DESDE LA NUBE) ---
-        const loader = new THREE.GLTFLoader();
-        let robot;
-        // Usamos el modelo oficial de Robot de Khronos (Link Permanente)
-        const cloudModel = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RobotArm/glTF-Binary/RobotArm.glb';
-
-        loader.load(cloudModel, (gltf) => {
-            robot = gltf.scene;
-            robot.scale.set(2.2, 2.2, 2.2);
-            robot.position.y = -1.5;
-            scene.add(robot);
-            console.log("Sistema: Robot B en línea.");
-        });
-
+        // ILUMINACIÓN
+        scene.add(new THREE.AmbientLight(0xffffff, 1));
         camera.position.z = 5;
 
-        // --- 3. LÓGICA DE MINERÍA Y LÁSER ---
-        window.addEventListener('mousedown', () => {
-            if(energy >= 5) {
-                energy -= 5;
-                coins += 10;
-                updateUI();
-                fireLaser();
-                // Animación de impacto en el robot
-                if(robot) {
-                    robot.scale.set(2.4, 2.4, 2.4);
-                    setTimeout(() => robot.scale.set(2.2, 2.2, 2.2), 100);
-                }
+        // PRUEBA DE CARGA (Detecta si es Modelo o Imagen)
+        const loader = new THREE.GLTFLoader();
+        const textureLoader = new THREE.TextureLoader();
+
+        // Intentamos cargar como modelo 3D (Robot)
+        loader.load(directLink, 
+            (gltf) => {
+                scene.add(gltf.scene);
+                gltf.scene.scale.set(2,2,2);
+                console.log("¡Modelo 3D cargado desde Drive!");
+            },
+            undefined,
+            (err) => {
+                // Si falla como 3D, lo ponemos como FONDO (Imagen)
+                textureLoader.load(directLink, (texture) => {
+                    scene.background = texture;
+                    console.log("¡Imagen de fondo cargada desde Drive!");
+                });
             }
-        });
+        );
 
-        function fireLaser() {
-            const laser = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.02, 0.02, 10),
-                new THREE.MeshBasicMaterial({ color: 0x00f2ff })
-            );
-            laser.rotation.x = Math.PI / 2;
-            scene.add(laser);
-            setTimeout(() => scene.remove(laser), 80);
-        }
-
-        function updateUI() {
-            document.getElementById('coins').innerText = coins;
-            document.getElementById('nrg-txt').innerText = energy;
-            document.getElementById('energy-fill').style.width = energy + "%";
-        }
-
-        // Recuperación de Energía (Passive Idle)
-        setInterval(() => {
-            if(energy < 100) { energy += 1; updateUI(); }
-        }, 1500);
-
-        // --- 4. BUCLE DE ANIMACIÓN ---
         function animate() {
             requestAnimationFrame(animate);
-            if(robot) robot.rotation.y += 0.005;
-            stars.rotation.y += 0.0005; // Las estrellas giran lento
             renderer.render(scene, camera);
         }
         animate();
-
-        // Ajuste de Ventana
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>

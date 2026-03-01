@@ -1,36 +1,25 @@
-// --- VARIABLES DE ESTADO ---
-let coins = parseInt(localStorage.getItem('tcoins')) || 0;
-let energy = 100;
-let mode = 'home'; 
+function handleTap(event) {
+    // 1. Ganancia de T-Coins y XP
+    xp += 1;
+    coins += (1 * level);
 
-// --- ACTUALIZACIÓN DE INTERFAZ ---
-function updateUI() {
-    const coinTxt = document.getElementById('coin-txt');
-    const energyBar = document.getElementById('energy-bar');
+    // 2. Efecto visual brillante
+    const container = document.getElementById('effect-container');
+    const flash = document.createElement('div');
+    flash.className = 'tap-flash';
     
-    if(coinTxt) coinTxt.innerText = Math.floor(coins).toLocaleString();
-    if(energyBar) {
-        energyBar.style.width = energy + "%";
-        // Cambio de color por fatiga
-        energyBar.style.background = energy < 20 ? "#ff3333" : "linear-gradient(90deg, #0f0, #008800)";
-    }
-}
+    // Posicionamos el destello donde se hizo clic
+    flash.style.left = `${event.clientX - 50}px`;
+    flash.style.top = `${event.clientY - 50}px`;
+    
+    container.appendChild(flash);
+    setTimeout(() => flash.remove(), 400);
 
-// --- LÓGICA DE MINADO ---
-function mineAutomatic() {
-    if(mode === 'earnings') {
-        coins += 1.5; // Minado pasivo por segundo
-        saveData();
-    }
-    
-    // Recuperación de energía siempre activa
-    if(energy < 100) energy += 0.5;
+    // 3. Animación de "Sacudida" del robot
+    const robot = document.getElementById('robot-display');
+    robot.style.transform = "scale(0.92) rotate(2deg)";
+    setTimeout(() => robot.style.transform = "scale(1) rotate(0deg)", 50);
+
     updateUI();
+    checkEvolution();
 }
-
-function saveData() {
-    localStorage.setItem('tcoins', coins);
-}
-
-// Iniciar bucle de juego
-setInterval(mineAutomatic, 1000);

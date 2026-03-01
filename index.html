@@ -7,165 +7,167 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --neon-purple: #9d00ff; --neon-cyan: #00f2ff; --glass: rgba(0, 0, 0, 0.8); }
+        :root { --neon: #7d2ae8; --cyan: #00f2ff; --bg: #010103; --panel: #0a0a12; }
         body { 
-            background: #000; font-family: 'Orbitron', sans-serif; color: white; 
-            margin: 0; overflow: hidden; height: 100vh;
-        }
-
-        /* FONDO DINÁMICO CIBERNÉTICO */
-        .cyber-bg {
-            position: fixed; inset: 0; z-index: -1;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(20,0,40,0.9)),
-                        url('https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=2000&auto=format&fit=crop');
+            background: var(--bg); font-family: 'Orbitron', sans-serif; 
+            color: white; margin: 0; overflow: hidden; height: 100vh;
+            background-image: url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2560&auto=format&fit=crop'); /* Espacio profundo sutil */
             background-size: cover; background-position: center;
-            filter: brightness(0.4) contrast(1.2);
         }
+        
+        /* CONTENIDO DE PESTAÑAS */
+        .tab-content { display: none; height: calc(100vh - 90px); overflow-y: auto; padding: 25px 20px; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* NAVEGACIÓN ESTILO NAVE ESPACIAL */
+        /* NAVEGACIÓN PROFESIONAL: SIN ICONOS */
         nav {
-            position: fixed; bottom: 0; width: 100%; height: 90px;
-            background: var(--glass); backdrop-filter: blur(20px);
+            position: fixed; bottom: 0; width: 100%; height: 95px;
+            background: rgba(5, 5, 10, 0.95); backdrop-filter: blur(15px);
             display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid var(--neon-purple); z-index: 1000;
+            border-top: 2px solid rgba(125, 42, 232, 0.2); z-index: 100;
+            padding: 0 10px;
         }
         .nav-item { 
             display: flex; flex-direction: column; align-items: center; 
-            opacity: 0.5; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-size: 8px; font-weight: 900; letter-spacing: 1px;
+            color: rgba(255,255,255,0.4); transition: 0.3s; font-size: 9px; cursor: pointer; 
+            text-transform: uppercase; letter-spacing: 1px;
         }
-        .nav-item.active { opacity: 1; transform: translateY(-5px); color: var(--neon-cyan); }
-        .nav-btn-img { 
-            width: 45px; height: 45px; object-fit: cover; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1); margin-bottom: 5px;
+        .nav-item.active { color: var(--cyan); }
+        
+        /* IMÁGENES DE NAVEGACIÓN HQ */
+        .nav-img { 
+            width: 38px; height: 38px; object-fit: cover; border-radius: 8px;
+            margin-bottom: 7px; transition: 0.3s; 
+            filter: grayscale(100%) opacity(50%);
+            border: 1px solid transparent;
         }
-        .active .nav-btn-img { border-color: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan); }
+        .nav-item.active .nav-img { 
+            filter: grayscale(0%) opacity(100%); 
+            transform: scale(1.1) translateY(-3px);
+            border-color: var(--cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+        }
 
-        /* VISTAS */
-        .view { display: none; height: calc(100vh - 90px); overflow-y: auto; padding: 25px; }
-        .view.active { display: block; animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* PERSONAJE ROBOT HQ */
-        .robot-container {
-            width: 100%; height: 60%; display: flex; align-items: center; justify-content: center;
-            position: relative;
+        /* HOME: TITÁN ROBÓTICO REAL */
+        .character-view { position: relative; width: 100%; height: 350px; margin: auto; display: flex; align-items: center; justify-content: center; }
+        .robot-photo { 
+            width: auto; height: 100%; max-width: 100%; object-fit: contain; 
+            filter: drop-shadow(0 0 25px rgba(0, 242, 255, 0.3)); 
+            animation: robot-idle 6s infinite ease-in-out; 
+            transition: all 0.3s ease;
         }
-        .main-robot {
-            width: 85%; max-width: 400px; filter: drop-shadow(0 0 30px var(--neon-cyan));
-            animation: pulse-float 4s infinite ease-in-out;
-            border-radius: 50px;
-        }
-        @keyframes pulse-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.05); } }
+        @keyframes robot-idle { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.02); } }
+        .character-view:active .robot-photo { transform: scale(0.9) translateY(10px); }
 
-        /* TARJETAS DE NAVES (EARNINGS) */
-        .ship-card {
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 20px; padding: 15px; margin-bottom: 15px;
+        /* EARNINGS: CABINAS DE NAVE REALES */
+        .ship-panel {
+            background: linear-gradient(160deg, #0d111a, #030408);
+            border: 1px solid rgba(0, 242, 255, 0.08); border-radius: 25px;
+            padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden;
             display: flex; align-items: center; gap: 15px;
-            transition: 0.3s;
+            transition: transform 0.2s ease, border-color 0.3s ease;
         }
-        .ship-card:active { background: rgba(0, 242, 255, 0.1); border-color: var(--neon-cyan); }
-        .ship-thumb { width: 80px; height: 80px; border-radius: 15px; object-fit: cover; }
+        .ship-panel:hover { border-color: rgba(0, 242, 255, 0.3); transform: translateY(-3px); }
+        
+        .ship-img-box { width: 70px; height: 70px; border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .ship-photo { width: 100%; height: 100%; object-fit: cover; }
+        
+        .buy-action { 
+            background: linear-gradient(90deg, #00f2ff, #00c3ff); color: black; 
+            font-weight: 900; border-radius: 12px; padding: 10px 20px; 
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0, 242, 255, 0.2);
+            transition: 0.2s;
+        }
+        .buy-action:active { transform: scale(0.95); box-shadow: none; }
 
-        /* TEXTO FLOTANTE */
-        .tap-val {
-            position: absolute; font-weight: 900; color: var(--neon-cyan);
-            font-size: 24px; text-shadow: 0 0 10px #000; animation: floatUp 0.8s forwards;
-            pointer-events: none; z-index: 500;
-        }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-150px); } }
+        /* EFECTO DE IMPACTO (DATOS FLOTANTES) */
+        .impact-data { position: absolute; font-weight: 900; color: var(--cyan); animation: impactFly 0.7s forwards; pointer-events: none; z-index: 200; font-size: 20px; text-shadow: 0 0 10px var(--cyan); }
+        @keyframes impactFly { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-120px) scale(1.4); } }
     </style>
 </head>
 <body>
 
-    <div class="cyber-bg"></div>
-
-    <div class="fixed top-0 left-0 w-full p-6 flex justify-between items-start z-50">
+    <div class="fixed top-0 left-0 w-full p-5 flex justify-between items-center z-50 bg-gradient-to-b from-black to-transparent">
         <div>
-            <p id="rank-name" class="text-[10px] text-amber-500 font-black tracking-[3px]">RANGO: RECLUTA</p>
-            <div class="flex items-center gap-2">
-                <span class="text-4xl font-black text-white" id="balance">0.000</span>
-                <span class="text-[10px] text-cyan-400 font-bold mt-2">T-COINS</span>
+            <p id="rank-display" class="text-amber-400 text-[10px] font-black tracking-widest">RANGO: RECLUTA</p>
+            <h1 class="text-4xl font-black text-white tracking-tighter" id="balance">0.000</h1>
+        </div>
+        <div class="text-right">
+            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Balance de Piloto</p>
+            <p class="text-xs text-cyan-400 font-bold">💎 T-COINS</p>
+        </div>
+    </div>
+
+    <div id="home" class="tab-content active flex flex-col justify-center items-center relative">
+        <div class="character-viewTap tap-zone" onclick="processTap(event)">
+            <img id="titan-visual" src="https://images.unsplash.com/photo-1549497538-303791108f94?q=80&w=1000&auto=format&fit=crop" class="robot-photo rounded-full">
+            <div class="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 text-center w-full">
+                <p class="text-cyan-400 text-xs font-black animate-pulse tracking-widest">TOCA PARA INICIAR EL NÚCLEO</p>
+            </div>
+        </div>
+        
+        <div class="w-full mt-16 px-6">
+            <div class="flex justify-between text-[10px] mb-1 font-bold">
+                <span class="text-cyan-600">ENERGÍA DE SISTEMA</span>
+                <span id="energy-txt" class="text-white">2000/2000</span>
+            </div>
+            <div class="w-full h-2.5 bg-gray-950 rounded-full border border-gray-800 overflow-hidden shadow-inner">
+                <div id="energy-bar" class="h-full bg-cyan-500 rounded-full shadow-[0_0_15px_rgba(0, 242, 255, 0.6)]" style="width: 100%"></div>
             </div>
         </div>
     </div>
 
-    <div id="view-home" class="view active">
-        <div class="robot-container mt-20" onclick="handleTap(event)">
-            <img id="robot-img" src="https://images.unsplash.com/photo-1549497538-303791108f94?q=80&w=1000&auto=format&fit=crop" class="main-robot">
-            <div class="absolute bottom-0 text-cyan-400 text-[10px] font-bold animate-pulse">PRESIONA EL NÚCLEO PARA MINAR</div>
-        </div>
+    <div id="earnings" class="tab-content">
+        <h2 class="text-2xl font-black mb-8 border-l-4 border-cyan-500 pl-4 tracking-tighter">FLOTA DE EXTRACCIÓN</h2>
         
-        <div class="w-full px-4 mt-10">
-            <div class="flex justify-between text-[10px] font-black mb-2">
-                <span class="text-cyan-600">SISTEMA DE ENERGÍA</span>
-                <span id="nrg-txt">2000/2000</span>
+        <div class="ship-panel">
+            <div class="ship-img-box">
+                <img src="https://images.unsplash.com/photo-1603356033288-acfcb54801e6?q=80&w=600&auto=format&fit=crop" class="ship-photo">
             </div>
-            <div class="w-full h-3 bg-gray-900 rounded-full border border-white/10 overflow-hidden">
-                <div id="nrg-bar" class="h-full bg-cyan-500 shadow-[0_0_15px_cyan]" style="width: 100%"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="view-earnings" class="view">
-        <h2 class="text-2xl font-black mb-6 text-cyan-400">CENTRO DE MINERÍA</h2>
-        
-        <div class="ship-card">
-            <img src="https://images.unsplash.com/photo-1603356033288-acfcb54801e6?q=80&w=300" class="ship-thumb">
             <div class="flex-1">
-                <h3 class="font-bold text-sm">EXPLORADOR LVL 1</h3>
-                <p class="text-[10px] text-gray-500">10 T-Coins / Hora</p>
+                <h3 class="font-bold text-base text-white">NAVE LVL 1</h3>
+                <p class="text-[10px] text-cyan-500 font-bold">Producción: <span class="text-white">10 T/h</span></p>
             </div>
-            <button class="bg-cyan-600 text-black font-black px-4 py-2 rounded-lg text-[10px]">2 USDT</button>
+            <button class="buy-action">2 USDT</button>
         </div>
 
-        <div class="ship-card border-amber-600 bg-amber-950/20">
-            <img src="https://images.unsplash.com/photo-1579710039144-85d6bdffddc9?q=80&w=300" class="ship-thumb">
+        <div class="ship-panel border-amber-600 bg-amber-950/10 hover:border-amber-400">
+            <div class="ship-img-box border-amber-500">
+                <img src="https://images.unsplash.com/photo-1579710039144-85d6bdffddc9?q=80&w=600&auto=format&fit=crop" class="ship-photo">
+            </div>
             <div class="flex-1">
-                <h3 class="font-bold text-sm text-amber-500">PREMIUM GALAXY</h3>
-                <p class="text-[10px] text-gray-400">20,000 T-Coins / Hora</p>
+                <h3 class="font-bold text-base text-amber-500">PREMIUM GALAXY</h3>
+                <p class="text-[10px] text-amber-600 font-bold">Producción: <span class="text-white">20,000 T/h</span></p>
             </div>
             <div class="text-right">
-                <span class="text-[8px] line-through text-amber-900">50 USDT</span><br>
-                <button class="bg-amber-600 text-black font-black px-4 py-2 rounded-lg text-[10px]">15 USDT</button>
+                <p class="text-[9px] text-amber-500 line-through opacity-60">50 USDT</p>
+                <button class="buy-action bg-amber-600 !shadow-[0_0_20px_rgba(251,191,36,0.3)]">15 USDT</button>
             </div>
         </div>
-    </div>
-
-    <div id="view-group" class="view">
-        <h2 class="text-2xl font-black text-purple-500">SISTEMA DE CLANES</h2>
-        <p class="text-gray-500 text-xs mt-4">Próximamente: Ranking mundial y referidos.</p>
-    </div>
-    <div id="view-accelerate" class="view">
-        <h2 class="text-2xl font-black text-red-500">ACELERADORES</h2>
-        <p class="text-gray-500 text-xs mt-4">Próximamente: Tareas y anuncios.</p>
-    </div>
-    <div id="view-wallet" class="view">
-        <h2 class="text-2xl font-black text-green-500">BILLETERA</h2>
-        <p class="text-gray-500 text-xs mt-4">Próximamente: Retiros en USDT.</p>
     </div>
 
     <nav>
-        <div class="nav-item active" onclick="switchTab('home', this)">
-            <img src="https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=100" class="nav-btn-img">
-            <span>HOME</span>
+        <div class="nav-item active" onclick="showTab('home', this)">
+            <img src="https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=300&auto=format&fit=crop" class="nav-img">
+            <span>Home</span>
         </div>
-        <div class="nav-item" onclick="switchTab('group', this)">
-            <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=100" class="nav-btn-img">
-            <span>GROUP</span>
+        <div class="nav-item" onclick="showTab('group', this)">
+            <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=300&auto=format&fit=crop" class="nav-img">
+            <span>Group</span>
         </div>
-        <div class="nav-item" onclick="switchTab('earnings', this)">
-            <img src="https://images.unsplash.com/photo-1581092916357-5896ebc48073?q=80&w=100" class="nav-btn-img">
-            <span>EARNINGS</span>
+        <div class="nav-item" onclick="showTab('earnings', this)">
+            <img src="https://images.unsplash.com/photo-1581092916357-5896ebc48073?q=80&w=300&auto=format&fit=crop" class="nav-img">
+            <span>Earnings</span>
         </div>
-        <div class="nav-item" onclick="switchTab('accelerate', this)">
-            <img src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=100" class="nav-btn-img">
-            <span>BOOST</span>
+        <div class="nav-item" onclick="showTab('accelerate', this)">
+            <img src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=300&auto=format&fit=crop" class="nav-img">
+            <span>Accelerate</span>
         </div>
-        <div class="nav-item" onclick="switchTab('wallet', this)">
-            <img src="https://images.unsplash.com/photo-1621504450181-5d356f63d3ee?q=80&w=100" class="nav-btn-img">
-            <span>WALLET</span>
+        <div class="nav-item" onclick="showTab('wallet', this)">
+            <img src="https://images.unsplash.com/photo-1621504450181-5d356f63d3ee?q=80&w=300&auto=format&fit=crop" class="nav-img">
+            <span>Wallet</span>
         </div>
     </nav>
 
@@ -174,62 +176,63 @@
         let energy = 2000;
         let tg = window.Telegram.WebApp;
 
-        // FUNCIÓN PARA CAMBIAR PESTAÑAS (LOS BOTONES QUE NO SERVIAN)
-        function switchTab(viewId, el) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            
-            document.getElementById('view-' + viewId).classList.add('active');
+        function showTab(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
             el.classList.add('active');
-            
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         }
 
-        // FUNCIÓN DE TAP
-        function handleTap(e) {
-            if(energy < 10) return;
+        function processTap(e) {
+            if(energy < 20) {
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                return;
+            }
 
             balance += 0.001;
-            energy -= 10;
-            updateEvol();
+            energy -= 20;
+            updateRank();
 
-            // Efecto visual de números flotando
-            const val = document.createElement('div');
-            val.innerText = "+0.001";
-            val.className = 'tap-val';
-            val.style.left = e.clientX + 'px';
-            val.style.top = e.clientY + 'px';
-            document.body.appendChild(val);
-            setTimeout(() => val.remove(), 800);
+            // Texto flotante de impacto HQ
+            const point = document.createElement('div');
+            point.innerText = "+0.001";
+            point.className = 'impact-data';
+            const rect = e.currentTarget.getBoundingClientRect();
+            point.style.left = (e.clientX - rect.left) + 'px';
+            point.style.top = (e.clientY - rect.top) + 'px';
+            e.currentTarget.appendChild(point);
 
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
             updateUI();
+            setTimeout(() => point.remove(), 700);
         }
 
-        // EVOLUCIÓN SEGÚN EL RANGO
-        function updateEvol() {
-            const img = document.getElementById('robot-img');
-            const rnk = document.getElementById('rank-name');
+        function updateRank() {
+            const bot = document.getElementById('titan-visual');
+            const rankTxt = document.getElementById('rank-display');
 
             if(balance >= 1.0) {
-                rnk.innerText = "RANGO: COMANDANTE TITÁN";
-                rnk.style.color = "#ff0044";
-                img.src = "https://images.unsplash.com/photo-1527430902023-f571761dfc91?q=80&w=1000";
+                rankTxt.innerText = "RANGO: TITÁN LEYENDA";
+                rankTxt.style.color = "#ffcc00";
+                bot.src = "https://images.unsplash.com/photo-1527430902023-f571761dfc91?q=80&w=1000&auto=format&fit=crop"; // Robot Avanzado Fotorrealista
+                bot.style.filter = "drop-shadow(0 0 35px #ffcc00)";
             } else if(balance >= 0.5) {
-                rnk.innerText = "RANGO: SARGENTO CIBERNÉTICO";
-                rnk.style.color = "#00f2ff";
-                img.src = "https://images.unsplash.com/photo-1617013892040-9774577f80f6?q=80&w=1000";
+                rankTxt.innerText = "RANGO: SARGENTO";
+                rankTxt.style.color = "#a855f7";
+                bot.src = "https://images.unsplash.com/photo-1617013892040-9774577f80f6?q=80&w=1000&auto=format&fit=crop"; // Robot Intermedio Real
+                bot.style.filter = "drop-shadow(0 0 30px #a855f7)";
             }
         }
 
         function updateUI() {
             document.getElementById('balance').innerText = balance.toFixed(3);
-            document.getElementById('nrg-txt').innerText = energy + "/2000";
-            document.getElementById('nrg-bar').style.width = (energy/20) + "%";
+            document.getElementById('energy-txt').innerText = energy + "/2000";
+            document.getElementById('energy-bar').style.width = (energy/20) + "%";
         }
 
-        setInterval(() => { if(energy < 2000) { energy += 5; updateUI(); } }, 2000);
-        window.onload = () => { tg.expand(); updateUI(); };
+        setInterval(() => { if(energy < 2000) { energy += 10; updateUI(); } }, 3000);
+        window.onload = () => { if(tg.expand) tg.expand(); updateUI(); };
     </script>
 </body>
 </html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>TITAN B: REVOLUTION</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
+        #header { position: absolute; top: 10px; width: 100%; text-align: center; color: #00f2ff; z-index: 10; text-shadow: 0 0 10px #00f2ff; }
+        #hud { position: absolute; top: 20px; left: 20px; color: #00f2ff; z-index: 10; pointer-events: none; }
+        .energy-bar { width: 200px; height: 10px; border: 1px solid #00f2ff; margin-top: 10px; background: rgba(0,242,255,0.1); }
+        #energy-fill { height: 100%; background: #00f2ff; width: 100%; box-shadow: 0 0 10px #00f2ff; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div id="header"><h1>TITAN B: REVOLUTION</h1></div>
+    
+    <div id="hud">
+        <p>T-COINS: <span id="coin-val">0</span></p>
+        <p>ENERGÍA: <span id="energy-text">100</span>%</p>
+        <div class="energy-bar"><div id="energy-fill"></div></div>
+    </div>
+
+    <script>
+        // --- MOTOR 3D ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // ILUMINACIÓN (Para ver al robot)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0x00f2ff, 1.5);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        // FONDO DE ESTRELLAS
+        const starGeo = new THREE.BufferGeometry();
+        const starCoords = [];
+        for(let i=0; i<2000; i++) {
+            starCoords.push(THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100));
+        }
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.05 })));
+
+        // CARGA DEL ROBOT
+        const loader = new THREE.GLTFLoader();
+        let robot;
+        const modelURL = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RobotArm/glTF-Binary/RobotArm.glb';
+
+        loader.load(modelURL, (gltf) => {
+            robot = gltf.scene;
+            robot.scale.set(2.5, 2.5, 2.5);
+            robot.position.y = -1.5;
+            scene.add(robot);
+        });
+
+        camera.position.z = 5;
+
+        // ANIMACIÓN
+        function animate() {
+            requestAnimationFrame(animate);
+            if(robot) robot.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Ajuste de pantalla
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

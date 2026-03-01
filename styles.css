@@ -1,54 +1,100 @@
-/* TITAN B - ULTRA NEON EDITION */
+/* TITAN B - OS V2.0 "ULTRA-GLOW"
+   Estilo: Neo-Cyberpunk Holográfico Realista
+*/
+
 :root {
     --hologram-blue: #00e5ff;
     --hologram-pink: #ff00de;
-    --gold-glow: #ffaa00;
-    --low-glow: 0 0 10px var(--hologram-blue);
-    --high-glow: 0 0 20px var(--hologram-blue), 0 0 40px var(--hologram-blue);
+    --gold: #ffcc00;
+    --neon-glow: 0 0 15px var(--hologram-blue), 0 0 30px rgba(0, 229, 255, 0.4);
+    --critical-glow: 0 0 20px #ff4444, 0 0 40px rgba(255, 68, 68, 0.6);
 }
 
-/* Efecto de destello al hacer clic */
-.tap-flash {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    background: white;
-    border-radius: 50%;
-    opacity: 0.8;
+* { box-sizing: border-box; user-select: none; }
+
+body, html {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden; background-color: #000;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* --- MOTOR VISUAL DE FONDO --- */
+#bg-video {
+    position: fixed; top: 50%; left: 50%;
+    min-width: 100%; min-height: 100%;
+    z-index: -100; transform: translateX(-50%) translateY(-50%);
+    filter: brightness(0.3) contrast(1.2);
+}
+
+.overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05) 1px, transparent 1px, transparent 2px);
     pointer-events: none;
-    animation: flash-out 0.4s ease-out forwards;
-    filter: blur(20px);
 }
 
-@keyframes flash-out {
-    0% { transform: scale(0.1); opacity: 1; }
-    100% { transform: scale(3); opacity: 0; }
+/* --- PANELES HOLOGRÁFICOS --- */
+.hologram-panel {
+    background: rgba(0, 229, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    box-shadow: var(--neon-glow);
+    border-radius: 12px;
+    color: var(--hologram-blue);
+    text-shadow: 0 0 10px var(--hologram-blue);
+}
+
+/* --- NÚCLEO DEL ROBOT Y EFECTOS --- */
+.robot-core {
+    display: flex; justify-content: center; align-items: center;
+    position: relative; height: 55vh;
 }
 
 #robot-display {
-    width: 280px;
-    z-index: 10;
-    filter: drop-shadow(0 0 15px var(--hologram-blue)) drop-shadow(0 0 30px rgba(0, 229, 255, 0.4));
-    transition: transform 0.05s ease, filter 0.3s;
+    width: 280px; z-index: 10;
+    filter: drop-shadow(0 0 20px var(--hologram-blue));
+    transition: transform 0.05s ease;
 }
 
-/* El Anillo de Energía ahora brilla mucho más */
+#robot-display:active { transform: scale(0.92) rotate(1deg); }
+
 .energy-ring {
-    position: absolute;
-    width: 340px;
-    height: 340px;
+    position: absolute; width: 340px; height: 340px;
     border: 3px solid transparent;
     border-top: 5px solid var(--hologram-blue);
     border-bottom: 5px solid var(--hologram-pink);
     border-radius: 50%;
-    box-shadow: 0 0 20px var(--hologram-blue);
+    box-shadow: 0 0 25px var(--hologram-blue);
     animation: rotate 2s linear infinite;
 }
 
-/* Texto brillante */
-.glow-text {
-    color: var(--hologram-blue);
-    text-shadow: 0 0 10px var(--hologram-blue), 0 0 20px var(--hologram-blue);
-    text-transform: uppercase;
-    letter-spacing: 2px;
+/* --- EFECTO HUMO NEÓN (OVERHEAT) --- */
+.smoke-particle {
+    position: absolute; width: 30px; height: 30px;
+    background: var(--hologram-pink);
+    filter: blur(20px); border-radius: 50%;
+    opacity: 0; pointer-events: none;
+    animation: rise-and-fade 1.2s ease-out forwards;
 }
+
+@keyframes rise-and-fade {
+    0% { transform: translateY(0) scale(1); opacity: 0.7; }
+    100% { transform: translateY(-200px) scale(4); opacity: 0; }
+}
+
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* --- NAVEGACIÓN --- */
+.nav-bar {
+    position: fixed; bottom: 0; width: 100%; height: 75px;
+    display: flex; justify-content: space-around; align-items: center;
+    background: rgba(0, 0, 0, 0.9);
+    border-top: 2px solid var(--hologram-blue);
+    box-shadow: 0 -5px 20px rgba(0, 229, 255, 0.2);
+}
+
+.nav-item {
+    color: var(--hologram-blue); font-size: 0.75rem;
+    text-align: center; opacity: 0.6; transition: 0.3s;
+}
+
+.nav-item.active { opacity: 1; text-shadow: 0 0 10px var(--hologram-blue); font-weight: bold; }

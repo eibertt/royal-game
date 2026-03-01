@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TITAN B - SISTEMA OPERATIVO</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 
     <video autoplay muted loop id="bg-video">
-        <source src="assets/fondo.mp4" type="video/mp4">
+        <source src="./assets/fondo.mp4" type="video/mp4">
     </video>
 
     <div class="overlay"></div>
@@ -31,7 +31,7 @@
 
         <div class="hologram-panel" style="margin: 15px; padding: 10px;">
             <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-                <span>ESTADO: <span id="system-status" style="color: #00e5ff;">INICIANDO MOTOR 3D...</span></span>
+                <span>ESTADO: <span id="system-status" style="color: #00e5ff;">VINCULANDO VERCEL...</span></span>
                 <span id="xp-text">XP: 0 / 4500</span>
             </div>
             <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; margin-top: 5px; border: 1px solid #00e5ff;">
@@ -48,29 +48,26 @@
         </nav>
     </div>
 
-    <script type="module" src="assets/robot_3d.js?v=12"></script>
-    
-    <script src="config.js?v=12"></script>
-    <script src="render_engine.js?v=12"></script>
-    <script src="game_logic.js?v=12"></script>
-    <script src="casino_logic.js?v=12"></script>
-    <script src="referrals.js?v=12"></script>
-    <script src="wallet_system.js?v=12"></script>
+    <script type="module" src="./robot_3d.js?v=13"></script>
+    <script src="./config.js?v=13"></script>
+    <script src="./render_engine.js?v=13"></script>
+    <script src="./game_logic.js?v=13"></script>
+    <script src="./casino_logic.js?v=13"></script>
+    <script src="./referrals.js?v=13"></script>
+    <script src="./wallet_system.js?v=13"></script>
 
     <script>
-        // Verificación de carga final
         window.onload = function() {
-            console.log("TITAN B: Todos los sistemas y motores 3D vinculados.");
+            console.log("TITAN B: Sistemas Vercel-Ready.");
             const status = document.getElementById('system-status');
             if(status) {
                 status.innerText = "ONLINE";
-                status.style.color = "#00ff88"; // Verde neón al estar listo
+                status.style.color = "#00ff88";
             }
         };
 
-        // Respaldo de la tienda en caso de que shop_system.js tarde en cargar
         function abrirTienda() {
-            alert("--- ASTILLERO IMPERIAL ---\n\n1. Scout C-1: $1 USDT (+100 T-Coins/hr)\n2. Heavy Miner: $5 USDT (+600 T-Coins/hr)\n3. TITAN A-15: $15 USDT (+2500 T-Coins/hr)\n\nInvita amigos para ganar un bono de +5000 T-Coins.");
+            alert("--- ASTILLERO IMPERIAL ---\n\n1. Scout C-1: $1 USDT\n2. Heavy Miner: $5 USDT\n3. TITAN A-15: $15 USDT");
         }
     </script>
 </body>

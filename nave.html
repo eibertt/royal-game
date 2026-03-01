@@ -57,11 +57,15 @@
         propR.position.x = 0.4;
         nave.add(propL, propR);
 
-        scene.add(nave);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-        const light = new THREE.PointLight(0x00ff00, 1, 10);
-        light.position.set(2, 2, 2);
-        scene.add(light);
+        // Luz ambiental al máximo para que se vea todo el cuerpo de la nave
+scene.add(new THREE.AmbientLight(0xffffff, 2.5)); 
+
+// Luz puntual verde para darle brillo de neón
+const light = new THREE.PointLight(0x00ff00, 5, 50);
+light.position.set(5, 5, 5);
+scene.add(light);
+
+        
 
         camera.position.set(0, 2, 5);
         camera.lookAt(0,0,0);

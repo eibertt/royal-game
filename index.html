@@ -26,7 +26,37 @@
 
     <script>
         // --- MOTOR 3D ---
-        const scene = new THREE.Scene();
+        const scene = new THREE.Scene();// --- 1. PEGA LAS LUCES AQUÍ (Para ver al robot) ---
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+const pointLight = new THREE.PointLight(0x00f2ff, 1.5, 100);
+pointLight.position.set(5, 5, 5);
+scene.add(pointLight);
+
+// --- 2. PEGA EL CARGADOR DEL ROBOT AQUÍ ---
+const loader = new THREE.GLTFLoader();
+let robot;
+
+// Esta es la dirección del robot en la nube
+const modelURL = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RobotArm/glTF-Binary/RobotArm.glb';
+
+loader.load(modelURL, (gltf) => {
+    robot = gltf.scene;
+    robot.scale.set(2.5, 2.5, 2.5); // Lo hacemos un poco más grande
+    robot.position.y = -1.2;        // Lo centramos en pantalla
+    scene.add(robot);
+    console.log("¡Robot B cargado con éxito!");
+});
+
+// --- 3. PEGA ESTO PARA QUE GIRE SOLO ---
+// Busca tu función animate() y asegúrate de que tenga esto:
+function animate() {
+    requestAnimationFrame(animate);
+    if(robot) robot.rotation.y += 0.01; // El robot girará sobre su eje
+    renderer.render(scene, camera);
+}
+
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);

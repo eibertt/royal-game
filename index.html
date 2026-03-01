@@ -5,19 +5,16 @@
     <title>TITAN B: REVOLUTION</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    
     <style>
         body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
+        #header { position: absolute; top: 10px; width: 100%; text-align: center; color: #00f2ff; z-index: 10; text-shadow: 0 0 10px #00f2ff; }
         #hud { position: absolute; top: 20px; left: 20px; color: #00f2ff; z-index: 10; pointer-events: none; }
-        .energy-bar { width: 200px; height: 10px; border: 1px solid #00f2ff; margin-top: 10px; background: rgba(0,242,255,0.1); }
-        #energy-fill { height: 100%; background: #00f2ff; width: 100%; transition: 0.3s; }
-        #header { position: absolute; top: 10px; width: 100%; text-align: center; color: #00f2ff; z-index: 10; }
+        .energy-bar { width: 200px; height: 10px; border: 1px solid #00f2ff; margin-top: 10px; }
+        #energy-fill { height: 100%; background: #00f2ff; width: 100%; box-shadow: 0 0 10px #00f2ff; }
     </style>
 </head>
 <body>
-
     <div id="header"><h1>TITAN B: REVOLUTION</h1></div>
-    
     <div id="hud">
         <p>T-COINS: <span id="coin-val">0</span></p>
         <p>ENERGÍA: <span id="energy-text">100</span>%</p>
@@ -25,71 +22,42 @@
     </div>
 
     <script>
-        // --- MOTOR 3D ---
-        const scene = new THREE.Scene();// --- 1. PEGA LAS LUCES AQUÍ (Para ver al robot) ---
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-scene.add(ambientLight);
-
-const pointLight = new THREE.PointLight(0x00f2ff, 1.5, 100);
-pointLight.position.set(5, 5, 5);
-scene.add(pointLight);
-
-// --- 2. PEGA EL CARGADOR DEL ROBOT AQUÍ ---
-const loader = new THREE.GLTFLoader();
-let robot;
-
-// Esta es la dirección del robot en la nube
-const modelURL = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RobotArm/glTF-Binary/RobotArm.glb';
-
-loader.load(modelURL, (gltf) => {
-    robot = gltf.scene;
-    robot.scale.set(2.5, 2.5, 2.5); // Lo hacemos un poco más grande
-    robot.position.y = -1.2;        // Lo centramos en pantalla
-    scene.add(robot);
-    console.log("¡Robot B cargado con éxito!");
-});
-
-// --- 3. PEGA ESTO PARA QUE GIRE SOLO ---
-// Busca tu función animate() y asegúrate de que tenga esto:
-function animate() {
-    requestAnimationFrame(animate);
-    if(robot) robot.rotation.y += 0.01; // El robot girará sobre su eje
-    renderer.render(scene, camera);
-}
-
+        // --- 1. CONFIGURACIÓN DEL MOTOR ---
+        const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // LUZ (Importante para ver al robot)
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(5, 5, 5).normalize();
-        scene.add(light);
-        scene.add(new THREE.AmbientLight(0x404040));
+        // --- 2. ILUMINACIÓN (Crucial para ver al robot) ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0x00f2ff, 1.5);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
 
-        // FONDO DE ESTRELLAS
+        // --- 3. FONDO DE ESTRELLAS ---
         const starGeo = new THREE.BufferGeometry();
         const starCoords = [];
-        for(let i=0; i<1500; i++) {
+        for(let i=0; i<2000; i++) {
             starCoords.push(THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100));
         }
         starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
         scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0x00f2ff, size: 0.05 })));
 
-        // --- CARGA AUTOMÁTICA DEL ROBOT ---
+        // --- 4. CARGA DEL ROBOT ---
         const loader = new THREE.GLTFLoader();
         let robot;
-        // Cargamos el modelo desde la nube
         loader.load('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RobotArm/glTF-Binary/RobotArm.glb', (gltf) => {
             robot = gltf.scene;
-            robot.scale.set(2, 2, 2);
+            robot.scale.set(2.5, 2.5, 2.5);
             robot.position.y = -1.5;
             scene.add(robot);
         });
 
         camera.position.z = 5;
 
+        // --- 5. ANIMACIÓN ---
         function animate() {
             requestAnimationFrame(animate);
             if(robot) robot.rotation.y += 0.01;
@@ -97,7 +65,6 @@ function animate() {
         }
         animate();
 
-        // Ajuste de ventana
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();

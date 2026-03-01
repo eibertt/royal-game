@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TITAN B: MINING SHIP</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
+        #gui { position: absolute; top: 20px; left: 20px; color: #0f0; z-index: 10; text-shadow: 0 0 10px #0f0; }
+        #shop { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 20; }
+        button { background: #0f0; color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 5px; box-shadow: 0 0 20px #0f0; }
+        .token-float { position: absolute; color: #0f0; font-weight: bold; pointer-events: none; animation: floatSide 2s forwards; opacity: 0; }
+        @keyframes floatSide { 0% { transform: translate(50px, 0); opacity: 0; } 50% { opacity: 1; } 100% { transform: translate(150px, -50px); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="gui">
+        <h1>SISTEMA MINERO</h1>
+        <p>TOTAL T-COINS: <span id="wallet">0</span></p>
+        <p id="status" style="color: #ff0000;">ESTADO: APAGADA</p>
+    </div>
+
+    <div id="shop">
+        <button id="buy-btn" onclick="comprarNave()">COMPRAR NAVE (ACTIVAR MINADO)</button>
+    </div>
+
+    <script>
+        let tcoins = parseInt(localStorage.getItem('tcoins')) || 0;
+        let isMining = false;
+
+        // 1. ESCENA 3D
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. CONSTRUCCIÓN DE LA NAVE
+        const nave = new THREE.Group();
+        const matVerde = new THREE.MeshPhongMaterial({ color: 0x00ff44, flatShading: true });
+        const matFuego = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+
+        const cuerpo = new THREE.Mesh(new THREE.ConeGeometry(0.8, 3, 4), matVerde);
+        cuerpo.rotation.x = Math.PI/2;
+        nave.add(cuerpo);
+
+        const ala = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 0.8), matVerde);
+        ala.position.z = -0.5;
+        nave.add(ala);
+
+        // Propulsores
+        const propL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.5), matFuego);
+        propL.position.set(-0.4, 0, -1.5);
+        const propR = propL.clone();
+        propR.position.x = 0.4;
+        nave.add(propL, propR);
+
+        scene.add(nave);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const light = new THREE.PointLight(0x00ff00, 1, 10);
+        light.position.set(2, 2, 2);
+        scene.add(light);
+
+        camera.position.set(0, 2, 5);
+        camera.lookAt(0,0,0);
+
+        // 3. LÓGICA DE MINADO
+        function comprarNave() {
+            isMining = true;
+            document.getElementById('buy-btn').style.display = 'none';
+            document.getElementById('status').innerText = "ESTADO: MINANDO...";
+            document.getElementById('status').style.color = "#0f0";
+            
+            // Iniciar ciclo de tokens cada 3 segundos (simulando hora)
+            setInterval(generarTokens, 3000);
+        }
+
+        function generarTokens() {
+            if(!isMining) return;
+            tcoins += 50;
+            localStorage.setItem('tcoins', tcoins);
+            document.getElementById('wallet').innerText = tcoins;
+
+            // Crear texto flotante al lateral
+            const div = document.createElement('div');
+            div.className = 'token-float';
+            div.innerText = '+50 T-COINS';
+            div.style.left = "60%";
+            div.style.top = "40%";
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 2000);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            nave.rotation.y += 0.005;
+            
+            // Efecto propulsor encendido (latido)
+            if(isMining) {
+                const s = 1 + Math.sin(Date.now() * 0.01) * 0.2;
+                propL.scale.set(s, s, s);
+                propR.scale.set(s, s, s);
+                nave.position.y = Math.sin(Date.now() * 0.005) * 0.1;
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        document.getElementById('wallet').innerText = tcoins;
+        animate();
+    </script>
+</body>
+</html>

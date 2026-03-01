@@ -2,58 +2,95 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TITAN B: DRIVE TEST</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TITAN B: REVOLUTION</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
-        #ui { position: absolute; top: 20px; left: 20px; color: #00f2ff; z-index: 10; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; color: #00f2ff; }
+        #gui { position: absolute; top: 20px; left: 20px; z-index: 10; text-shadow: 0 0 10px #00f2ff; }
+        .bar-bg { width: 180px; height: 10px; border: 1px solid #00f2ff; margin-top: 10px; }
+        #energy-bar { width: 100%; height: 100%; background: #00f2ff; transition: 0.3s; }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <h1>SISTEMA EN LÍNEA</h1>
-        <p>ARCHIVO DRIVE DETECTADO</p>
+
+    <div id="gui">
+        <h1>TITAN B: EVOLUTION</h1>
+        <p>T-COINS: <span id="coin-txt">0</span></p>
+        <p>ENERGÍA: <span id="nrg-txt">100</span>%</p>
+        <div class="bar-bg"><div id="energy-bar"></div></div>
     </div>
 
     <script>
-        // --- CONFIGURACIÓN DE TU ENLACE ---
-        const DRIVE_ID = '1mYO2_VCIEtHCicwIS76nSmoP8bMyNaAD';
-        const directLink = `https://docs.google.com/uc?export=download&id=${DRIVE_ID}`;
+        let coins = 0;
+        let energy = 100;
 
+        // 1. ESCENA Y MOTOR
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // ILUMINACIÓN
-        scene.add(new THREE.AmbientLight(0xffffff, 1));
-        camera.position.z = 5;
+        // 2. LUCES (Para que no se vea negro)
+        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+        const light = new THREE.DirectionalLight(0x00f2ff, 1);
+        light.position.set(5, 5, 5);
+        scene.add(light);
 
-        // PRUEBA DE CARGA (Detecta si es Modelo o Imagen)
+        // 3. FONDO DE ESTRELLAS (Siempre cargará)
+        const starGeo = new THREE.BufferGeometry();
+        const starPos = [];
+        for(let i=0; i<1500; i++) {
+            starPos.push(Math.random()*100-50, Math.random()*100-50, Math.random()*100-50);
+        }
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0x00f2ff, size: 0.1})));
+
+        // 4. CARGADOR DE ROBOTS (Tu Drive + Respaldo)
         const loader = new THREE.GLTFLoader();
-        const textureLoader = new THREE.TextureLoader();
+        let robot;
+        
+        // Tu ID de Drive
+        const driveLink = "https://docs.google.com/uc?export=download&id=1mYO2_VCIEtHCicwIS76nSmoP8bMyNaAD";
+        // Modelo de respaldo (Si Drive falla)
+        const fallback = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RobotArm/glTF-Binary/RobotArm.glb";
 
-        // Intentamos cargar como modelo 3D (Robot)
-        loader.load(directLink, 
-            (gltf) => {
-                scene.add(gltf.scene);
-                gltf.scene.scale.set(2,2,2);
-                console.log("¡Modelo 3D cargado desde Drive!");
-            },
-            undefined,
-            (err) => {
-                // Si falla como 3D, lo ponemos como FONDO (Imagen)
-                textureLoader.load(directLink, (texture) => {
-                    scene.background = texture;
-                    console.log("¡Imagen de fondo cargada desde Drive!");
-                });
+        function cargarRobot(url) {
+            loader.load(url, (gltf) => {
+                robot = gltf.scene;
+                robot.scale.set(2, 2, 2);
+                robot.position.y = -1.5;
+                scene.add(robot);
+            }, undefined, () => {
+                console.log("Drive falló, usando respaldo...");
+                if(url !== fallback) cargarRobot(fallback);
+            });
+        }
+        cargarRobot(driveLink);
+
+        // 5. CLIC PARA MINAR
+        window.addEventListener('mousedown', () => {
+            if(energy >= 5) {
+                energy -= 5;
+                coins += 10;
+                document.getElementById('coin-txt').innerText = coins;
+                document.getElementById('nrg-txt').innerText = energy;
+                document.getElementById('energy-bar').style.width = energy + "%";
+                
+                // Efecto visual al robot
+                if(robot) {
+                    robot.scale.set(2.2, 2.2, 2.2);
+                    setTimeout(() => robot.scale.set(2, 2, 2), 100);
+                }
             }
-        );
+        });
 
+        camera.position.z = 5;
         function animate() {
             requestAnimationFrame(animate);
+            if(robot) robot.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
         animate();

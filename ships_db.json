@@ -1,0 +1,49 @@
+{
+  "astillero_titan": [
+    {
+      "id": 1,
+      "nombre": "Explorador Neon-Z",
+      "precio_usdt": 1,
+      "produccion_tcoins_hora": 50,
+      "descripcion": "Nave ligera de reconocimiento. Ideal para principiantes.",
+      "imagen": "ship1.png",
+      "nivel_requerido": 1
+    },
+    {
+      "id": 2,
+      "nombre": "Extractor de Plasma",
+      "precio_usdt": 3,
+      "produccion_tcoins_hora": 160,
+      "descripcion": "Diseñada para perforar asteroides de T-Coin con precisión láser.",
+      "imagen": "ship2.png",
+      "nivel_requerido": 2
+    },
+    {
+      "id": 3,
+      "nombre": "Fragata Interestelar",
+      "precio_usdt": 7,
+      "produccion_tcoins_hora": 400,
+      "descripcion": "Blindaje pesado y motores de doble núcleo para minado masivo.",
+      "imagen": "ship3.png",
+      "nivel_requerido": 2
+    },
+    {
+      "id": 4,
+      "nombre": "Acorazado General",
+      "precio_usdt": 10,
+      "produccion_tcoins_hora": 650,
+      "descripcion": "Tecnología de punta. Solo para comandantes de alto rango.",
+      "imagen": "ship4.png",
+      "nivel_requerido": 3
+    },
+    {
+      "id": 5,
+      "nombre": "Titán Dorado Imperial",
+      "precio_usdt": 15,
+      "produccion_tcoins_hora": 1200,
+      "descripcion": "La joya de la corona. Oro puro y energía infinita.",
+      "imagen": "ship5.png",
+      "nivel_requerido": 4
+    }
+  ]
+}

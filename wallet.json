@@ -1,0 +1,10 @@
+{
+  "currency_name": "T-COIN",
+  "symbol": "TC",
+  "market_value_usd": 0.0045,
+  "withdraw_limit": 50000,
+  "owned_ships": [
+    { "id": "titan_b", "name": "Titan B Miner", "level": 1, "power": 50 }
+  ],
+  "networks": ["Solana", "TON", "Ethereum"]
+}

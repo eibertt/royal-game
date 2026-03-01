@@ -1,87 +1,67 @@
-/** TITAN B - GALAXY ENGINE (Procedural Stars & Nebulae) */
 const canvas = document.getElementById('galaxy-bg');
 const ctx = canvas.getContext('2d');
 
-let width, height, stars = [], nebulae = [];
-
-// Configuración de la Galaxia
-const STAR_COUNT = 150;
-const NEBULA_COUNT = 3;
-
-class Star {
-    constructor() {
-        this.reset();
-    }
-    reset() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.size = Math.random() * 1.5;
-        this.speed = Math.random() * 0.2 + 0.05; // Movimiento muy lento
-        this.opacity = Math.random() * 0.8 + 0.2;
-    }
-    update() {
-        this.y += this.speed;
-        // Si sale por abajo, reaparece arriba
-        if (this.y > height) {
-            this.y = 0;
-            this.x = Math.random() * width;
-        }
-    }
-    draw() {
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
-class Nebula {
-    constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.size = Math.random() * 300 + 200;
-        // Colores Tácticos (Cian y Fucsia muy suaves)
-        this.color = Math.random() > 0.5 ? 'rgba(0, 229, 255, 0.03)' : 'rgba(255, 0, 222, 0.02)';
-    }
-    draw() {
-        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
-        gradient.addColorStop(0, this.color);
-        gradient.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
+let stars = [];
+let particles = [];
+const STAR_COUNT = 180;
 
 function initGalaxy() {
-    resize();
-    for (let i = 0; i < STAR_COUNT; i++) stars.push(new Star());
-    for (let i = 0; i < NEBULA_COUNT; i++) nebulae.push(new Nebula());
-    animateGalaxy();
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    stars = [];
+    
+    // Crear Estrellas con diferentes profundidades
+    for (let i = 0; i < STAR_COUNT; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 1.8,
+            speed: Math.random() * 0.4 + 0.05,
+            opacity: Math.random()
+        });
+    }
 }
 
-function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-}
+function drawGalaxy() {
+    // Fondo base negro puro para resaltar el neón
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-function animateGalaxy() {
-    // Limpiamos con el fondo degradado del CSS (alpha transparente)
-    ctx.clearRect(0, 0, width, height);
+    // Dibujar Nebulosa de Ambiente (Efecto Hangar)
+    const gradient = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, 0, 
+        canvas.width / 2, canvas.height / 2, canvas.width * 0.8
+    );
+    gradient.addColorStop(0, 'rgba(0, 229, 255, 0.06)'); // Brillo Cian central
+    gradient.addColorStop(0.5, 'rgba(255, 0, 222, 0.03)'); // Brillo Fucsia lateral
+    gradient.addColorStop(1, 'transparent');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Dibujar Nebulosas (Fondo)
-    nebulae.forEach(n => n.draw());
+    // Animar Estrellas
+    stars.forEach(star => {
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
 
-    // Actualizar y Dibujar Estrellas
-    stars.forEach(s => {
-        s.update();
-        s.draw();
+        star.y += star.speed;
+        
+        // Si la estrella sale de pantalla, vuelve arriba
+        if (star.y > canvas.height) {
+            star.y = 0;
+            star.x = Math.random() * canvas.width;
+        }
+
+        // Efecto de centelleo
+        star.opacity += (Math.random() - 0.5) * 0.02;
+        if (star.opacity < 0.1) star.opacity = 0.1;
+        if (star.opacity > 0.8) star.opacity = 0.8;
     });
 
-    requestAnimationFrame(animateGalaxy);
+    requestAnimationFrame(drawGalaxy);
 }
 
-// Eventos
-window.addEventListener('resize', resize);
-window.addEventListener('load', initGalaxy);
+window.addEventListener('resize', initGalaxy);
+initGalaxy();
+drawGalaxy();

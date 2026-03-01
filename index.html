@@ -3,123 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TITAN B: SUPREME</title>
+    <title>TITAN B: REVOLUTION</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #00f2ff; }
-        #gui { position: absolute; top: 20px; left: 20px; z-index: 10; pointer-events: none; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
+        
+        /* VIDEO DE FONDO INFINITO */
+        #bg-video {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: -1; /* Detrás de todo */
+            filter: brightness(0.4); /* Para que el HUD resalte más */
+        }
+
+        /* INTERFAZ DEL JUEGO */
+        #gui { position: absolute; top: 20px; left: 20px; z-index: 10; pointer-events: none; color: #00f2ff; }
         .bar-bg { width: 180px; height: 10px; border: 1px solid #00f2ff; margin-top: 10px; background: rgba(0,242,255,0.1); }
-        #energy-bar { width: 100%; height: 100%; background: #00f2ff; transition: 0.3s; box-shadow: 0 0 10px #00f2ff; }
-        .floating-text { position: absolute; color: #fff; font-weight: bold; pointer-events: none; animation: floatUp 1s forwards; text-shadow: 0 0 5px #00f2ff; }
+        #energy-bar { width: 100%; height: 100%; background: #00f2ff; box-shadow: 0 0 10px #00f2ff; }
+        .floating-text { position: absolute; color: #fff; font-weight: bold; pointer-events: none; animation: floatUp 1s forwards; }
         @keyframes floatUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-100px); opacity: 0; } }
-        button { pointer-events: auto; background: #00f2ff; color: #000; border: none; padding: 5px 10px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
+    <video id="bg-video" autoplay loop muted playsinline>
+        <source src="intro.mp4" type="video/mp4">
+    </video>
+
     <div id="gui">
-        <h1>TITAN B: SUPREME</h1>
+        <h1>TITAN B: EVOLUTION</h1>
         <p>T-COINS: <span id="coin-txt">0</span></p>
         <p>ENERGÍA: <span id="nrg-txt">100</span>%</p>
         <div class="bar-bg"><div id="energy-bar"></div></div>
-        <p id="rank" style="font-size: 12px; margin-top: 5px;">RANGO: RECLUTA</p>
-        <button onclick="resetGame()" style="margin-top:10px; font-size:10px;">REINICIAR DATOS</button>
     </div>
 
     <script>
-        // --- 1. CARGAR DATOS GUARDADOS ---
         let coins = parseInt(localStorage.getItem('tcoins')) || 0;
         let energy = 100;
-        let currentTier = 1;
 
+        // MOTOR 3D (Transparente para ver el video)
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // 'alpha' permite ver el video de fondo
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // --- 2. AMBIENTE 3D ---
-        const starGeo = new THREE.BufferGeometry();
-        const starPos = [];
-        for(let i=0; i<3000; i++) starPos.push(Math.random()*100-50, Math.random()*100-50, Math.random()*100-50);
-        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0x00f2ff, size: 0.05})));
-        scene.add(new THREE.AmbientLight(0xffffff, 1));
+        // ILUMINACIÓN
+        scene.add(new THREE.AmbientLight(0xffffff, 1.5));
 
-        // --- 3. EL NANO SAGE (SPRITE) ---
+        // CARGA DEL ROBOT
         const textureLoader = new THREE.TextureLoader();
-        let robotSprite;
+        let robot;
+        textureLoader.load('robot1.png', (tex) => {
+            const mat = new THREE.SpriteMaterial({ map: tex });
+            robot = new THREE.Sprite(mat);
+            robot.scale.set(4, 4, 1);
+            scene.add(robot);
+        });
 
-        function cargarRobot(num) {
-            textureLoader.load(`robot${num}.png`, (texture) => {
-                if (robotSprite) scene.remove(robotSprite);
-                const material = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0.9 });
-                robotSprite = new THREE.Sprite(material);
-                robotSprite.scale.set(4, 4, 1);
-                scene.add(robotSprite);
-            });
-        }
-        cargarRobot(1);
-
-        // --- 4. LÓGICA DE CLIC Y EFECTOS ---
+        // MINERÍA
         window.addEventListener('mousedown', (e) => {
             if(energy >= 5) {
-                energy -= 5;
-                coins += 10;
-                
-                // Guardar progreso automáticamente
+                energy -= 5; coins += 10;
                 localStorage.setItem('tcoins', coins);
+                actualizarUI();
                 
-                // Efecto visual +10
-                const text = document.createElement('div');
-                text.className = 'floating-text';
-                text.innerText = '+10';
-                text.style.left = e.clientX + 'px';
-                text.style.top = e.clientY + 'px';
-                document.body.appendChild(text);
-                setTimeout(() => text.remove(), 1000);
-
-                // Animación de escala
-                if(robotSprite) {
-                    robotSprite.scale.set(4.3, 4.3, 1);
-                    setTimeout(() => robotSprite.scale.set(4, 4, 1), 100);
-                }
-
-                actualizarInterfaz();
+                // Efecto +10
+                const t = document.createElement('div');
+                t.className = 'floating-text';
+                t.innerText = '+10';
+                t.style.left = e.clientX + 'px'; t.style.top = e.clientY + 'px';
+                document.body.appendChild(t);
+                setTimeout(() => t.remove(), 1000);
             }
         });
 
-        function actualizarInterfaz() {
+        function actualizarUI() {
             document.getElementById('coin-txt').innerText = coins;
             document.getElementById('nrg-txt').innerText = energy;
             document.getElementById('energy-bar').style.width = energy + "%";
-
-            // Evolución automática por coins guardados
-            if (coins >= 500 && currentTier < 3) {
-                currentTier = 3; cargarRobot(3);
-                document.getElementById('rank').innerText = "RANGO: TITÁN";
-            } else if (coins >= 100 && currentTier < 2) {
-                currentTier = 2; cargarRobot(2);
-                document.getElementById('rank').innerText = "RANGO: AVANZADO";
-            }
         }
-
-        function resetGame() {
-            localStorage.clear();
-            location.reload();
-        }
-
-        // Recuperación de energía y primera carga
-        setInterval(() => { if(energy < 100) { energy += 2; actualizarInterfaz(); } }, 1500);
-        actualizarInterfaz();
 
         camera.position.z = 5;
         function animate() {
             requestAnimationFrame(animate);
-            if(robotSprite) robotSprite.position.y = Math.sin(Date.now() * 0.002) * 0.1;
+            if(robot) robot.position.y = Math.sin(Date.now() * 0.002) * 0.15;
             renderer.render(scene, camera);
         }
         animate();
+        actualizarUI();
     </script>
 </body>
 </html>

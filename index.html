@@ -47,10 +47,25 @@
         };
     </script>
 
-    <script src="game_logic.js?v=3"></script>
-    <script src="casino_logic.js?v=3"></script>
-    <script src="referrals.js?v=3"></script>
-    <script src="wallet_system.js?v=3"></script>
+        <script src="game_logic.js?v=4"></script>
+    <script src="casino_logic.js?v=4"></script>
+    <script src="referrals.js?v=4"></script>
+    <script src="wallet_system.js?v=4"></script>
+
+    <script>
+        // Función de seguridad para esperar a que todo cargue
+        window.onload = function() {
+            console.log("TITAN B: Sistemas en línea.");
+            document.getElementById('system-status').innerText = "SISTEMA: ONLINE";
+        };
+
+        function abrirTienda() {
+            alert("Accediendo al Astillero... Cargando naves de $1 a $15 USDT");
+        }
+    </script>
+</body>
+</html>
+
 
 
 

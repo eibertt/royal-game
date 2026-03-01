@@ -1,0 +1,28 @@
+{
+  "robots": [
+    {
+      "id": 1,
+      "name": "Red Bastion",
+      "image": "robot1.png",
+      "power": 10,
+      "cost": 0,
+      "description": "Tu primer guardián de combate."
+    },
+    {
+      "id": 2,
+      "name": "Blue Sentinel",
+      "image": "robot2.png",
+      "power": 25,
+      "cost": 5000,
+      "description": "Blindaje reforzado y mayor velocidad."
+    },
+    {
+      "id": 3,
+      "name": "Gold Overlord",
+      "image": "robot3.png",
+      "power": 60,
+      "cost": 15000,
+      "description": "El soberano del minado profundo."
+    }
+  ]
+}

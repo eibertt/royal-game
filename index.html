@@ -2,141 +2,66 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TITAN B: TOTAL SYSTEM</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; color: #0f0; }
-        #gui { position: absolute; top: 20px; left: 20px; z-index: 100; pointer-events: none; }
-        .bar-bg { width: 150px; height: 10px; border: 1px solid #0f0; background: rgba(0,255,0,0.1); margin-top: 5px; }
-        #energy-bar { width: 100%; height: 100%; background: #0f0; box-shadow: 0 0 10px #0f0; transition: 0.3s; }
-        
-        /* BARRA DE NAVEGACIÓN */
-        #navbar { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.9); border-top: 1px solid #333; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
-        .nav-item { text-align: center; cursor: pointer; transition: 0.3s; opacity: 0.6; }
-        .nav-item.active { opacity: 1; filter: drop-shadow(0 0 5px #0f0); }
-        .btn-center { background: #4e54ff; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -35px; border: 3px solid #000; box-shadow: 0 5px 15px rgba(78,84,255,0.4); }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TITAN B - SISTEMA OPERATIVO</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@tonconnect/sdk@latest/dist/tonconnect-sdk.min.js"></script>
 </head>
 <body>
 
-    <div id="gui">
-        <h2 id="mode-title">MODO: COMBATE (HOME)</h2>
-        <p>T-COINS: <span id="coin-txt">0</span></p>
-        <div class="bar-bg"><div id="energy-bar"></div></div>
+    <video autoplay muted loop id="bg-video">
+        <source src="fondo.mp4" type="video/mp4">
+    </video>
+
+    <div class="overlay"></div>
+
+    <div id="game-container">
+        <div class="hologram-panel" style="display: flex; justify-content: space-between; padding: 15px; margin: 15px;">
+            <div>
+                <small style="color: var(--hologram-pink)">T-COINS</small>
+                <div id="coin-balance" style="font-size: 1.8rem; font-weight: bold;">0</div>
+            </div>
+            <div style="text-align: right;">
+                <small>RANGO ACTUAL</small>
+                <div id="rank-display" class="glow-text">RECLUTA</div>
+            </div>
+        </div>
+
+        <div class="robot-core">
+            <div id="effect-container"></div>
+            <div class="energy-ring" id="heat-ring"></div>
+            <img src="robot1.png" id="robot-display" onclick="handleTap(event)">
+        </div>
+
+        <div class="hologram-panel" style="margin: 15px; padding: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                <span>ESTADO: <span id="system-status">ESTABLE</span></span>
+                <span id="xp-text">XP: 0 / 4500</span>
+            </div>
+            <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; margin-top: 5px; border: 1px solid var(--hologram-blue);">
+                <div id="xp-bar" style="width: 0%; height: 100%; background: var(--hologram-blue); box-shadow: 0 0 15px var(--hologram-blue);"></div>
+            </div>
+        </div>
+
+        <nav class="nav-bar">
+            <div class="nav-item active" onclick="location.reload()">HOME</div>
+            <div class="nav-item" onclick="jugarRuleta()">CASINO</div>
+            <div class="nav-item" style="color: var(--gold); font-weight: bold;" onclick="abrirTienda()">SHIPS</div>
+            <div class="nav-item" onclick="reclamarBonoReferido()">FRIENDS</div>
+            <div class="nav-item" onclick="conectarBilletera()">WALLET</div>
+        </nav>
     </div>
 
-    <div id="navbar">
-        <div class="nav-item active" onclick="switchMode('home')">
-            <div style="font-size:25px;">🏠</div>
-            <span style="font-size:10px;">Home</span>
-        </div>
-        <div class="nav-item" onclick="switchMode('earnings')">
-            <div class="btn-center"><div style="font-size:30px;">🛸</div></div>
-            <span style="font-size:10px; color:#4e54ff; font-weight:bold;">Earnings</span>
-        </div>
-        <div class="nav-item" style="opacity: 0.2;">
-            <div style="font-size:25px;">💰</div>
-            <span style="font-size:10px;">Wallet</span>
-        </div>
-    </div>
+    <script src="game_logic.js"></script>
+    <script src="casino_logic.js"></script>
+    <script src="referrals.js"></script>
+    <script src="wallet_system.js"></script>
 
     <script>
-        let coins = parseInt(localStorage.getItem('tcoins')) || 0;
-        let energy = 100;
-        let mode = 'home'; // 'home' o 'earnings'
-
-        // --- 1. MOTOR 3D PRINCIPAL ---
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-        const pointLight = new THREE.PointLight(0x00ff00, 2, 50);
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
-
-        // --- 2. OBJETOS (Robot y Nave) ---
-        const textureLoader = new THREE.TextureLoader();
-        let robot;
-        const nave = new THREE.Group();
-
-        // Cargar Robot
-        textureLoader.load('robot1.png', (tex) => {
-            const mat = new THREE.SpriteMaterial({ map: tex });
-            robot = new THREE.Sprite(mat);
-            robot.scale.set(4, 4, 1);
-            scene.add(robot);
-        });
-
-        // Construir Nave (Oculta al inicio)
-        const matVerde = new THREE.MeshPhongMaterial({ color: 0x00ff00, flatShading: true });
-        const cuerpo = new THREE.Mesh(new THREE.ConeGeometry(1, 3, 4), matVerde);
-        cuerpo.rotation.x = Math.PI/2;
-        nave.add(cuerpo);
-        const ala = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 0.8), matVerde);
-        nave.add(ala);
-        nave.visible = false; // Empieza escondida
-        scene.add(nave);
-
-        // --- 3. LÓGICA DE CAMBIO DE MODO ---
-        function switchMode(newMode) {
-            mode = newMode;
-            const items = document.querySelectorAll('.nav-item');
-            items[0].classList.toggle('active', mode === 'home');
-            items[1].classList.toggle('active', mode === 'earnings');
-
-            if(mode === 'home') {
-                if(robot) robot.visible = true;
-                nave.visible = false;
-                document.getElementById('mode-title').innerText = "MODO: COMBATE (HOME)";
-                document.getElementById('mode-title').style.color = "#0f0";
-            } else {
-                if(robot) robot.visible = false;
-                nave.visible = true;
-                document.getElementById('mode-title').innerText = "MODO: MINERÍA (EARNINGS)";
-                document.getElementById('mode-title').style.color = "#4e54ff";
-            }
+        function abrirTienda() {
+            alert("Accediendo al Astillero... Cargando naves de $1 a $15 USDT");
+            // Aquí llamaríamos a la visualización de ships_db.json
         }
-
-        // --- 4. CLICKER Y MINADO ---
-        window.addEventListener('mousedown', () => {
-            if(mode === 'home' && energy >= 5) {
-                energy -= 5; coins += 10;
-                saveAndUI();
-            }
-        });
-
-        setInterval(() => {
-            if(mode === 'earnings') {
-                coins += 5; // Mina 5 cada segundo automáticamente
-                saveAndUI();
-            }
-            if(energy < 100) energy += 1; // Recupera energía
-            saveAndUI();
-        }, 1000);
-
-        function saveAndUI() {
-            localStorage.setItem('tcoins', coins);
-            document.getElementById('coin-txt').innerText = coins;
-            document.getElementById('energy-bar').style.width = energy + "%";
-        }
-
-        // --- 5. ANIMACIÓN ---
-        camera.position.z = 6;
-        function animate() {
-            requestAnimationFrame(animate);
-            if(robot && robot.visible) robot.position.y = Math.sin(Date.now() * 0.002) * 0.1;
-            if(nave && nave.visible) {
-                nave.rotation.y += 0.02;
-                nave.position.y = Math.sin(Date.now() * 0.002) * 0.2;
-            }
-            renderer.render(scene, camera);
-        }
-        animate();
-        saveAndUI();
     </script>
 </body>
 </html>

@@ -11,121 +11,213 @@
     <style>
         :root { --neon: #00f2ff; --purple: #bc13fe; --bg: #010103; }
         body { background: var(--bg); color: white; font-family: 'Orbitron', sans-serif; margin: 0; overflow: hidden; height: 100vh; }
+        
+        /* MOTOR 3D AL FONDO */
         #canvas-3d { position: fixed; top: 0; left: 0; z-index: 1; }
 
-        /* HUD PRINCIPAL */
-        .hud { position: relative; z-index: 10; pointer-events: none; height: 100vh; display: flex; flex-direction: column; padding: 20px; }
-        .glass { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid rgba(0,242,255,0.2); border-radius: 15px; padding: 15px; pointer-events: auto; }
-        
-        /* SECCIONES */
-        .page { display: none; height: 100%; animation: fadeIn 0.4s ease; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-        /* NAVEGACIÓN PRO */
-        nav {
-            position: fixed; bottom: 15px; left: 10px; right: 10px; height: 80px;
-            background: rgba(10,10,20,0.95); border-radius: 25px; border: 1px solid rgba(255,255,255,0.1);
-            display: flex; justify-content: space-around; align-items: center; z-index: 100; pointer-events: auto;
+        /* HUD DINÁMICO */
+        .hud-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; pointer-events: none; }
+        .glass-panel { 
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); 
+            border: 1px solid rgba(0,242,255,0.3); border-radius: 20px; 
+            padding: 15px; pointer-events: auto;
         }
-        .nav-btn { display: flex; flex-direction: column; align-items: center; opacity: 0.4; transition: 0.3s; }
-        .nav-btn.active { opacity: 1; transform: translateY(-8px); color: var(--neon); }
-        .nav-icon { width: 28px; height: 28px; filter: drop-shadow(0 0 5px var(--neon)); margin-bottom: 4px; }
+
+        /* SISTEMA DE PÁGINAS SPA */
+        .view { display: none; padding: 20px; height: 100%; overflow-y: auto; }
+        .view.active { display: block; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* NAVEGACIÓN DE LUJO (5 BOTONES) */
+        nav {
+            position: fixed; bottom: 15px; left: 15px; right: 15px; height: 85px;
+            background: rgba(5, 5, 10, 0.95); border-radius: 30px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-around; align-items: center; 
+            z-index: 100; pointer-events: auto;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.3; transition: 0.4s; }
+        .nav-item.active { opacity: 1; transform: translateY(-10px); color: var(--neon); }
+        .nav-icon { width: 30px; height: 30px; margin-bottom: 5px; filter: drop-shadow(0 0 8px var(--neon)); }
+
+        /* EFECTO DE IMPACTO */
+        .tap-effect {
+            position: fixed; pointer-events: none; color: var(--neon);
+            font-weight: 900; font-size: 22px; text-shadow: 0 0 10px var(--neon);
+            animation: floatUp 0.8s forwards; z-index: 1000;
+        }
+        @keyframes floatUp { to { transform: translateY(-150px) scale(1.5); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <canvas id="canvas-3d"></canvas>
 
-    <div class="hud">
-        <div class="flex justify-between items-start mb-10">
-            <div class="glass">
-                <p class="text-[8px] text-cyan-400 tracking-[3px]">REACTOR CORE</p>
-                <h1 id="bal" class="text-3xl font-black">0.000</h1>
+    <div class="hud-layer">
+        <div class="p-6 flex justify-between items-start">
+            <div class="glass-panel">
+                <p class="text-[8px] text-cyan-400 tracking-[4px] font-bold">CORE STATUS</p>
+                <h1 id="main-bal" class="text-3xl font-black tracking-tighter">0.000</h1>
             </div>
-            <div class="glass text-right">
-                <p class="text-[8px] text-purple-400 font-bold uppercase">Sistema OK</p>
+            <div class="glass-panel text-right">
+                <p class="text-[8px] text-purple-400 font-bold uppercase">Reactor Ready</p>
                 <div class="w-24 h-1.5 bg-gray-900 rounded-full mt-2 overflow-hidden">
-                    <div id="nrg-bar" class="h-full bg-cyan-400 shadow-[0_0_10px_#00f2ff]" style="width: 100%"></div>
+                    <div id="energy-bar" class="h-full bg-cyan-500 shadow-[0_0_15px_#00f2ff]" style="width: 100%"></div>
                 </div>
             </div>
         </div>
 
-        <div id="home" class="page active flex-1 flex items-center justify-center pointer-events-auto" onclick="mine(event)">
-            <p class="absolute bottom-32 text-[10px] text-cyan-500 font-bold animate-pulse">TOQUE PARA MINAR NÚCLEO</p>
+        <div id="view-home" class="view active pointer-events-auto" onclick="handleTap(event)">
+            <div class="h-full flex flex-col items-center justify-center">
+                <p class="mt-80 text-[10px] text-cyan-500 font-black animate-pulse tracking-[5px]">TOQUE EL NÚCLEO</p>
+            </div>
         </div>
 
-        <div id="group" class="page flex-1"><div class="glass mt-20"><h2>SISTEMA DE CLANES</h2><p class="text-xs text-gray-400 mt-2">Próximamente: Ranking mundial.</p></div></div>
-        <div id="earn" class="page flex-1"><div class="glass mt-20"><h2>CENTRO DE MINERÍA</h2><p class="text-xs text-gray-400 mt-2">Adquiere naves Nova.</p></div></div>
-        <div id="boost" class="page flex-1"><div class="glass mt-20"><h2>ACELERADORES</h2><p class="text-xs text-gray-400 mt-2">Tareas y recompensas.</p></div></div>
-        <div id="wallet" class="page flex-1"><div class="glass mt-20"><h2>BILLETERA</h2><p class="text-xs text-gray-400 mt-2">Retiros en USDT.</p></div></div>
+        <div id="view-group" class="view">
+            <div class="glass-panel mt-20">
+                <h2 class="text-xl font-black text-purple-500">CLANES DE ÉLITE</h2>
+                <p class="text-[10px] text-gray-400 mt-2">Próximamente: Conquista la galaxia con tus amigos.</p>
+            </div>
+        </div>
+
+        <div id="view-earn" class="view">
+            <div class="glass-panel mt-20">
+                <h2 class="text-xl font-black text-cyan-500">FLOTA DE MINERÍA</h2>
+                <div class="mt-4 p-3 bg-white/5 rounded-xl border border-white/10 flex items-center justify-between">
+                    <span class="text-xs font-bold">Interceptor V1</span>
+                    <button class="bg-cyan-500 text-black text-[10px] font-black px-4 py-2 rounded-lg">2 USDT</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-boost" class="view">
+            <div class="glass-panel mt-20">
+                <h2 class="text-xl font-black text-yellow-500">ACELERADORES</h2>
+                <p class="text-[10px] text-gray-400 mt-2">Completa misiones para ganar T-Coins extras.</p>
+            </div>
+        </div>
+
+        <div id="view-wallet" class="view">
+            <div class="glass-panel mt-20">
+                <h2 class="text-xl font-black text-green-500">CARTERA CENTRAL</h2>
+                <p class="text-[10px] text-gray-400 mt-2">Balance retirable: <span class="text-white">0.00 USDT</span></p>
+            </div>
+        </div>
     </div>
 
     <nav>
-        <div class="nav-btn active" onclick="show('home', this)"><img src="https://cdn-icons-png.flaticon.com/512/3563/3563417.png" class="nav-icon"><span>HOME</span></div>
-        <div class="nav-btn" onclick="show('group', this)"><img src="https://cdn-icons-png.flaticon.com/512/1189/1189132.png" class="nav-icon"><span>GROUP</span></div>
-        <div class="nav-btn" onclick="show('earn', this)"><img src="https://cdn-icons-png.flaticon.com/512/2534/2534204.png" class="nav-icon"><span>EARN</span></div>
-        <div class="nav-btn" onclick="show('boost', this)"><img src="https://cdn-icons-png.flaticon.com/512/3163/3163624.png" class="nav-icon"><span>BOOST</span></div>
-        <div class="nav-btn" onclick="show('wallet', this)"><img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" class="nav-icon"><span>WALLET</span></div>
+        <div class="nav-item active" onclick="navigate('home', this)">
+            <img src="https://cdn-icons-png.flaticon.com/512/3563/3563417.png" class="nav-icon">
+            <span class="text-[8px] font-black">CORE</span>
+        </div>
+        <div class="nav-item" onclick="navigate('group', this)">
+            <img src="https://cdn-icons-png.flaticon.com/512/1189/1189132.png" class="nav-icon">
+            <span class="text-[8px] font-black">GROUP</span>
+        </div>
+        <div class="nav-item" onclick="navigate('earn', this)">
+            <img src="https://cdn-icons-png.flaticon.com/512/2534/2534204.png" class="nav-icon">
+            <span class="text-[8px] font-black">EARN</span>
+        </div>
+        <div class="nav-item" onclick="navigate('boost', this)">
+            <img src="https://cdn-icons-png.flaticon.com/512/3163/3163624.png" class="nav-icon">
+            <span class="text-[8px] font-black">BOOST</span>
+        </div>
+        <div class="nav-item" onclick="navigate('wallet', this)">
+            <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" class="nav-icon">
+            <span class="text-[8px] font-black">WALLET</span>
+        </div>
     </nav>
 
     <script>
-        // MOTOR 3D
-        const sc = new THREE.Scene();
-        const cam = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const ren = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas-3d'), antialias: true, alpha: true });
-        ren.setSize(window.innerWidth, window.innerHeight);
+        // CONFIGURACIÓN THREE.JS PROFESIONAL
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas-3d'), antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
 
-        // Geometría 3D de alta gama
-        const geo = new THREE.TorusKnotGeometry(1.2, 0.4, 150, 20);
-        const mat = new THREE.MeshStandardMaterial({ color: 0x00f2ff, metalness: 0.9, roughness: 0.1, wireframe: true });
-        const obj = new THREE.Mesh(geo, mat);
-        sc.add(obj);
-        sc.add(new THREE.PointLight(0xffffff, 2, 100).clone().set(5,5,5));
-        cam.position.z = 5;
+        // NÚCLEO 3D (TORUS KNOT)
+        const geometry = new THREE.TorusKnotGeometry(1, 0.35, 200, 32);
+        const material = new THREE.MeshStandardMaterial({ 
+            color: 0x00f2ff, metalness: 1, roughness: 0.2, wireframe: true,
+            emissive: 0x00f2ff, emissiveIntensity: 0.5 
+        });
+        const core = new THREE.Mesh(geometry, material);
+        scene.add(core);
 
-        // ESTRELLAS DINÁMICAS
+        // ILUMINACIÓN VOLUMÉTRICA
+        const pLight = new THREE.PointLight(0xffffff, 2, 100);
+        pLight.position.set(5, 5, 5);
+        scene.add(pLight);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        // CAMPO DE ESTRELLAS 3D
         const starGeo = new THREE.BufferGeometry();
-        const starPos = [];
-        for(let i=0; i<3000; i++) starPos.push(THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100));
-        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-        sc.add(new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.05})));
+        const starPoints = [];
+        for(let i=0; i<4000; i++) starPoints.push(THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100), THREE.MathUtils.randFloatSpread(100));
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPoints, 3));
+        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05 });
+        const starField = new THREE.Points(starGeo, starMat);
+        scene.add(starField);
 
-        let bal = parseFloat(localStorage.getItem('titan_bal')) || 0;
-        let nrg = 2000;
+        camera.position.z = 4.5;
+
+        // LÓGICA DE JUEGO
+        let balance = parseFloat(localStorage.getItem('titan_bal')) || 0;
+        let energy = 2000;
         let tg = window.Telegram.WebApp;
 
-        function animate() { requestAnimationFrame(animate); obj.rotation.y += 0.01; ren.render(sc, cam); }
+        function animate() {
+            requestAnimationFrame(animate);
+            core.rotation.y += 0.01;
+            core.rotation.x += 0.005;
+            starField.rotation.y += 0.0005;
+            renderer.render(scene, camera);
+        }
 
-        function show(id, btn) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        function navigate(viewId, btn) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
             btn.classList.add('active');
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         }
 
-        function mine(e) {
-            if(nrg < 10) return;
-            bal += 0.001; nrg -= 10;
-            localStorage.setItem('titan_bal', bal);
-            gsap.to(obj.scale, {x:1.3, y:1.3, z:1.3, duration:0.1, yoyo:true, repeat:1});
+        function handleTap(e) {
+            if(energy < 10) return;
+            balance += 0.001;
+            energy -= 10;
+            localStorage.setItem('titan_bal', balance);
+
+            // Efecto Visual 3D Pro
+            gsap.to(core.scale, { x: 1.3, y: 1.3, z: 1.3, duration: 0.1, yoyo: true, repeat: 1 });
             
+            // Texto Flotante
             const p = document.createElement('div');
+            p.className = 'tap-effect';
             p.innerText = "+0.001";
-            p.style.cssText = `position:fixed; left:${e.clientX}px; top:${e.clientY}px; color:var(--neon); font-weight:900; animation:out 0.8s forwards; pointer-events:none; z-index:1000;`;
+            p.style.left = e.clientX + 'px';
+            p.style.top = e.clientY + 'px';
             document.body.appendChild(p);
             setTimeout(() => p.remove(), 800);
+
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
             updateUI();
         }
 
         function updateUI() {
-            document.getElementById('bal').innerText = bal.toFixed(3);
-            document.getElementById('nrg-bar').style.width = (nrg/20) + "%";
+            document.getElementById('main-bal').innerText = balance.toFixed(3);
+            document.getElementById('energy-bar').style.width = (energy / 20) + "%";
         }
+
+        setInterval(() => { if(energy < 2000) { energy += 5; updateUI(); } }, 2000);
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
 
         animate(); updateUI(); tg.expand();
     </script>
-    <style>@keyframes out { to { transform: translateY(-100px) scale(2); opacity: 0; } }</style>
 </body>
 </html>

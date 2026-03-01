@@ -1,51 +1,44 @@
-/* TITAN B - PROTOCOLO DE BILLETERA (WALLET) */
+/* TITAN B - PROTOCOLO DE PAGO SEGURO */
+
+const ADMIN_WALLET = "UQCa4JhWm99Dv9SfeW2fYskEd8VXY-SdJdrWY0auqx5Fm4j9"; 
 
 const WALLET_CONFIG = {
     minimoRetiroUSDT: 5.0,
-    tasaCambio: 10000, // 10,000 T-Coins = 1 USDT
+    tasaCambio: 10000, 
     feeVerificacionTON: 0.1,
     isVerified: false
 };
 
-let userWalletAddress = null;
-
-// Conectar con TonKeeper / Telegram Wallet
-async function conectarBilletera() {
-    // Aquí integraremos la TonConnect API en el index.html al final
-    console.log("Iniciando Protocolo de Conexión...");
+// Función para procesar la compra de Naves ($1 - $15 USDT)
+async function procesarCompraNave(precioUSDT, naveId) {
+    console.log(`Iniciando pago de ${precioUSDT} USDT a ${ADMIN_WALLET}`);
     
-    // Simulación de conexión exitosa
-    userWalletAddress = "EQD...4xT2"; 
-    actualizarEstadoWallet();
-}
+    // Aquí se conecta con TonConnect (lo activaremos en el index.html)
+    const transaction = {
+        validUntil: Math.floor(Date.now() / 1000) + 600,
+        messages: [
+            {
+                address: ADMIN_WALLET,
+                amount: (precioUSDT * 1000000000).toString(), // Conversión a NanoTokens
+            }
+        ]
+    };
 
-function actualizarEstadoWallet() {
-    const status = document.getElementById('system-status');
-    if (userWalletAddress) {
-        status.innerText = "BILLETERA VINCULADA";
-        status.style.color = "var(--hologram-blue)";
+    try {
+        // El sistema pedirá la firma en TonKeeper
+        alert(`Redirigiendo a TonKeeper para el pago de ${precioUSDT} USDT...`);
+        // Lógica de confirmación exitosa:
+        // registrarNave(naveId);
+    } catch (e) {
+        console.error("Pago cancelado", e);
     }
 }
 
 function solicitarRetiro() {
     const usdtEquivalente = coins / WALLET_CONFIG.tasaCambio;
-
-    if (!userWalletAddress) {
-        alert("ERROR: Vincula tu billetera TON primero.");
-        return;
-    }
-
     if (usdtEquivalente < WALLET_CONFIG.minimoRetiroUSDT) {
-        alert(`Mínimo de retiro: ${WALLET_CONFIG.minimoRetiroUSDT} USDT. Te faltan ${(WALLET_CONFIG.minimoRetiroUSDT - usdtEquivalente).toFixed(2)} USDT.`);
+        alert("Balance insuficiente para retiro.");
         return;
     }
-
-    if (!WALLET_CONFIG.isVerified) {
-        alert(`PROTOCOLO DE SEGURIDAD: Para habilitar retiros, se requiere una verificación única de ${WALLET_CONFIG.feeVerificacionTON} TON para confirmar que eres humano.`);
-        // Aquí se dispararía el payload de la transacción de 0.1 TON
-    } else {
-        alert("SOLICITUD ENVIADA: Procesando tus USDT...");
-        coins = 0; // Se vacía el balance tras el retiro
-        updateUI();
-    }
+    alert("Solicitud enviada al administrador.");
 }

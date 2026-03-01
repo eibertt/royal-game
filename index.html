@@ -1,212 +1,47 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --bg-dark: #020205; }
-        
-        body { 
-            background: var(--bg-dark); font-family: 'Orbitron', sans-serif; 
-            color: white; margin: 0; overflow: hidden; height: 100vh;
-            background-image: radial-gradient(circle at center, #0a0a20 0%, #000 100%);
-        }
+<!-- SECCIÓN DE BILLETERA FUTURISTA -->
+<div id="wallet" class="tab-view">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-black text-green-400">CENTRO DE ACTIVOS</h2>
+        <span class="text-[10px] bg-green-900/30 text-green-400 px-2 py-1 rounded border border-green-500/50">RED: TON</span>
+    </div>
 
-        /* FONDO CINEMÁTICO */
-        .main-frame {
-            position: fixed; inset: 0;
-            background-image: url('https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=2000');
-            background-size: cover; background-position: center;
-            opacity: 0.15; z-index: -1;
-        }
+    <!-- TARJETA DE BALANCE TOTAL -->
+    <div class="hologram-card border-green-500/30 bg-green-500/5 p-6 mb-6 text-center">
+        <p class="text-[10px] text-gray-400 mb-1">BALANCE ESTIMADO</p>
+        <h3 class="text-4xl font-black text-white">$0.00</h3>
+        <p class="text-[10px] text-green-500 mt-2">0.000 T-COINS DISPONIBLES</p>
+    </div>
 
-        /* NAVEGACIÓN ESTILO PANEL DE CONTROL */
-        nav {
-            position: fixed; bottom: 0; width: 100%; height: 90px;
-            background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(15px);
-            display: flex; justify-content: space-around; align-items: center;
-            border-top: 2px solid rgba(0, 242, 255, 0.2); z-index: 1000;
-        }
+    <!-- LISTA DE TOKENS -->
+    <div class="space-y-4">
+        <div class="hologram-card flex items-center justify-between p-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500 flex items-center justify-center">
+                    <span class="font-bold text-blue-400">T</span>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm">TON Coin</h4>
+                    <p class="text-[10px] text-gray-500">0.00 TON</p>
+                </div>
+            </div>
+            <button class="text-xs font-bold text-cyan-400 border border-cyan-400/30 px-3 py-1 rounded">RETIRAR</button>
+        </div>
 
-        .nav-item { 
-            display: flex; flex-direction: column; align-items: center; 
-            opacity: 0.4; transition: 0.3s; cursor: pointer;
-        }
-
-        .nav-item.active { opacity: 1; transform: translateY(-5px); }
-
-        .nav-img { 
-            width: 42px; height: 42px; object-fit: cover; border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 4px;
-        }
-
-        .active .nav-img { border-color: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan); }
-
-        /* VISTAS */
-        .tab-view { display: none; height: calc(100vh - 90px); padding: 20px; overflow-y: auto; }
-        .tab-view.active { display: block; animation: viewFade 0.4s ease-out; }
-        @keyframes viewFade { from { opacity: 0; } to { opacity: 1; } }
-
-        /* EL ROBOT TITÁN */
-        .robot-display {
-            width: 100%; height: 60vh; display: flex; align-items: center; justify-content: center;
-            position: relative; perspective: 1000px;
-        }
-
-        .robot-main-img {
-            width: 85%; max-width: 350px; 
-            filter: drop-shadow(0 0 30px rgba(0, 242, 255, 0.4));
-            animation: floatRobot 5s infinite ease-in-out;
-            border-radius: 30px;
-        }
-
-        @keyframes floatRobot { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-
-        /* PANEL HOLOGRAMA */
-        .hologram-card {
-            background: rgba(0, 242, 255, 0.05); border: 1px solid rgba(0, 242, 255, 0.2);
-            backdrop-filter: blur(5px); border-radius: 15px; padding: 15px;
-        }
-
-        /* EFECTO CLICK */
-        .tap-point {
-            position: absolute; color: var(--neon-cyan); font-weight: 900;
-            font-size: 24px; pointer-events: none; animation: flyUp 0.8s forwards;
-            text-shadow: 0 0 10px var(--neon-cyan);
-        }
-        @keyframes flyUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
-    </style>
-</head>
-<body>
-
-    <div class="main-frame"></div>
-
-    <div class="fixed top-0 left-0 w-full p-6 flex justify-between items-start z-50">
-        <div class="hologram-card">
-            <p id="rank-name" class="text-[8px] text-cyan-400 font-bold tracking-[3px]">SISTEMA: RECLUTA</p>
-            <h1 class="text-3xl font-black text-white" id="balance">0.000</h1>
-            <p class="text-[8px] text-gray-500 uppercase">T-COINS ASIGNADOS</p>
+        <div class="hologram-card flex items-center justify-between p-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-green-500/20 border border-green-500 flex items-center justify-center">
+                    <span class="font-bold text-green-400">$</span>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm">USDT</h4>
+                    <p class="text-[10px] text-gray-500">0.00 USDT</p>
+                </div>
+            </div>
+            <button class="text-xs font-bold text-cyan-400 border border-cyan-400/30 px-3 py-1 rounded">RETIRAR</button>
         </div>
     </div>
 
-    <div id="home" class="tab-view active flex flex-col items-center">
-        <div class="robot-display mt-20" onclick="handleTap(event)">
-            <img id="robot-img" src="https://images.unsplash.com/photo-1549497538-303791108f94?q=80&w=1000" class="robot-main-img">
-        </div>
-
-        <div class="w-full max-w-sm px-4">
-            <div class="flex justify-between text-[10px] font-bold mb-1 text-cyan-500">
-                <span>NÚCLEO DE ENERGÍA</span>
-                <span id="energy-val">2000 / 2000</span>
-            </div>
-            <div class="w-full h-2 bg-black rounded-full border border-cyan-900 overflow-hidden">
-                <div id="energy-bar" class="h-full bg-cyan-400 shadow-[0_0_10px_cyan]" style="width: 100%"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="earnings" class="tab-view">
-        <h2 class="text-xl font-black mb-6 text-cyan-400 border-b border-cyan-900 pb-2">CENTRO DE MINERÍA</h2>
-        
-        <div class="hologram-card flex items-center gap-4 mb-4">
-            <img src="https://images.unsplash.com/photo-1603356033288-acfcb54801e6?q=80&w=200" class="w-16 h-16 rounded-lg object-cover">
-            <div class="flex-1">
-                <h3 class="font-bold text-sm">NAVE LVL 1</h3>
-                <p class="text-[10px] text-gray-400">Genera: 10 T/h</p>
-            </div>
-            <button class="bg-cyan-500 text-black font-black px-4 py-2 rounded-lg text-xs">2 USDT</button>
-        </div>
-
-        <div class="hologram-card border-amber-500 bg-amber-500/5 flex items-center gap-4">
-            <img src="https://images.unsplash.com/photo-1579710039144-85d6bdffddc9?q=80&w=200" class="w-16 h-16 rounded-lg object-cover">
-            <div class="flex-1">
-                <h3 class="font-bold text-sm text-amber-500">PREMIUM GALAXY</h3>
-                <p class="text-[10px] text-gray-400">Genera: 20k T/h</p>
-            </div>
-            <button class="bg-amber-600 text-black font-black px-4 py-2 rounded-lg text-xs">15 USDT</button>
-        </div>
-    </div>
-
-    <div id="group" class="tab-view"><h2 class="text-xl font-black">SISTEMA DE CLANES</h2></div>
-    <div id="accelerate" class="tab-view"><h2 class="text-xl font-black text-red-500">TURBO BOOST</h2></div>
-    <div id="wallet" class="tab-view"><h2 class="text-xl font-black text-green-500">BILLETERA</h2></div>
-
-    <nav>
-        <div class="nav-item active" onclick="showTab('home', this)">
-            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=100" class="nav-img">
-            <span>HOME</span>
-        </div>
-        <div class="nav-item" onclick="showTab('group', this)">
-            <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=100" class="nav-img">
-            <span>GROUP</span>
-        </div>
-        <div class="nav-item" onclick="showTab('earnings', this)">
-            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=100" class="nav-img">
-            <span>EARN</span>
-        </div>
-        <div class="nav-item" onclick="showTab('accelerate', this)">
-            <img src="https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=100" class="nav-img">
-            <span>BOOST</span>
-        </div>
-        <div class="nav-item" onclick="showTab('wallet', this)">
-            <img src="https://images.unsplash.com/photo-1621504450181-5d356f63d3ee?q=80&w=100" class="nav-img">
-            <span>WALLET</span>
-        </div>
-    </nav>
-
-    <script>
-        let balance = 0;
-        let energy = 2000;
-        let tg = window.Telegram.WebApp;
-
-        function showTab(tabId, el) {
-            // Desactivar todo
-            document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            
-            // Activar actual
-            document.getElementById(tabId).classList.add('active');
-            el.classList.add('active');
-            
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-        }
-
-        function handleTap(e) {
-            if(energy < 10) return;
-            
-            balance += 0.001;
-            energy -= 10;
-            
-            // Efecto Visual
-            const p = document.createElement('div');
-            p.innerText = "+0.001";
-            p.className = 'tap-point';
-            p.style.left = e.clientX + 'px';
-            p.style.top = e.clientY + 'px';
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 800);
-
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
-            updateUI();
-        }
-
-        function updateUI() {
-            document.getElementById('balance').innerText = balance.toFixed(3);
-            document.getElementById('energy-val').innerText = energy + " / 2000";
-            document.getElementById('energy-bar').style.width = (energy / 20) + "%";
-            
-            // Evolución de rango
-            if(balance >= 0.5) {
-                document.getElementById('rank-name').innerText = "SISTEMA: COMANDANTE";
-                document.getElementById('robot-img').src = "https://images.unsplash.com/photo-1527430902023-f571761dfc91?q=80&w=1000";
-            }
-        }
-
-        setInterval(() => { if(energy < 2000) { energy += 5; updateUI(); } }, 2000);
-        window.onload = () => { if(tg.expand) tg.expand(); updateUI(); };
-    </script>
-</body>
-</html>
+    <button class="w-full mt-8 bg-green-500 hover:bg-green-400 text-black font-black py-4 rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-all">
+        CONECTAR BILLETERA TON
+    </button>
+</div>

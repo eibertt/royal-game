@@ -5,223 +5,196 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --robot-cyan: #22d3ee;
-            --bg-dark: #020617;
+        :root { --neon: #00f2ff; --dark-blue: #020617; }
+        body { 
+            background-color: var(--dark-blue); 
+            font-family: 'Orbitron', sans-serif; 
+            margin: 0; overflow: hidden; color: white;
         }
 
-        body {
-            background-color: var(--bg-dark);
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            color: white;
-            user-select: none;
+        /* FONDO DE NAVE ESPACIAL */
+        .bg-space {
+            position: fixed; inset: 0;
+            background-image: url('https://images.unsplash.com/photo-1614728263952-84ea256f9679?q=80&w=1000&auto=format&fit=crop');
+            background-size: cover; background-position: center;
+            opacity: 0.2; z-index: -1;
         }
 
-        /* CONTENEDOR PRINCIPAL */
-        .game-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
+        /* SPLASH SCREEN ESTILO CONEJO */
+        #splash {
+            position: fixed; inset: 0; background: #000; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.8s ease;
         }
 
-        /* EL ROBOT TITÁN */
-        .robot-container {
-            position: relative;
-            width: 250px;
-            height: 250px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
+        .loader-bot {
+            width: 120px; height: 120px;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/4712/4712109.png');
+            background-size: contain; animation: pulse 1.5s infinite;
         }
 
-        .titan-bot {
-            font-size: 140px;
-            filter: drop-shadow(0 0 15px var(--robot-cyan));
-            animation: robot-float 4s ease-in-out infinite;
-            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10;
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 1; } }
+
+        /* MODAL DE NOMBRE */
+        #name-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 90; display: none; align-items: center; justify-content: center; padding: 20px;
         }
 
-        .energy-field {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
-            border-radius: 50%;
-            border: 2px dashed rgba(34, 211, 238, 0.3);
-            animation: rotate-field 15s linear infinite;
+        /* ROBOT CENTRAL (IMAGEN REAL) */
+        .robot-main {
+            width: 280px; height: 280px;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/4712/4712035.png'); /* Robot Cyberpunk HD */
+            background-size: contain; background-repeat: no-repeat;
+            filter: drop-shadow(0 0 20px var(--neon));
+            animation: float 4s ease-in-out infinite;
+            cursor: pointer; transition: transform 0.1s;
         }
 
-        /* ANIMACIONES */
-        @keyframes robot-float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .robot-main:active { transform: scale(0.9) rotate(2deg); }
+
+        /* BARRA DE ENERGÍA NEÓN */
+        .energy-bar {
+            width: 100%; height: 10px; background: #1e293b;
+            border-radius: 5px; overflow: hidden; border: 1px solid var(--neon);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+        }
+        .energy-fill { 
+            width: 100%; height: 100%; background: var(--neon); 
+            transition: width 0.3s ease; box-shadow: 0 0 15px var(--neon);
         }
 
-        @keyframes rotate-field {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .floating-score {
+            position: absolute; color: var(--neon); font-weight: 900; font-size: 30px;
+            pointer-events: none; animation: scoreUp 0.8s forwards;
         }
-
-        /* EFECTO CLICK */
-        .robot-container:active .titan-bot {
-            transform: scale(0.85);
-        }
-
-        /* INTERFAZ SUPERIOR */
-        .stats-top {
-            width: 100%;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .balance-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px 20px;
-            border-radius: 20px;
-            border: 1px solid rgba(34, 211, 238, 0.3);
-            font-size: 24px;
-            font-weight: 900;
-        }
-
-        /* BARRA DE ENERGÍA */
-        .energy-section {
-            width: 80%;
-            margin-bottom: 50px;
-        }
-
-        .energy-bar-bg {
-            width: 100%;
-            height: 12px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .energy-fill {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, #22d3ee, #0891b2);
-            transition: width 0.3s ease;
-            box-shadow: 0 0 10px var(--robot-cyan);
-        }
-
-        /* TEXTO FLOTANTE (+0.15) */
-        .floating-point {
-            position: absolute;
-            color: var(--robot-cyan);
-            font-weight: 900;
-            font-size: 28px;
-            pointer-events: none;
-            animation: float-up 0.8s ease-out forwards;
-            z-index: 50;
-        }
-
-        @keyframes float-up {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
-        }
+        @keyframes scoreUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-150px); opacity: 0; } }
     </style>
 </head>
 <body>
 
-    <div class="stats-top">
-        <div class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Titan Bot Game</div>
-        <div class="balance-card">💎 <span id="balance">0.00</span></div>
+    <div class="bg-space"></div>
+
+    <div id="splash">
+        <div class="loader-bot mb-6"></div>
+        <h1 class="text-2xl font-black tracking-widest text-cyan-400">CARGANDO TITÁN...</h1>
+        <div class="w-48 h-1 bg-gray-800 mt-4 rounded-full overflow-hidden">
+            <div id="load-bar" class="h-full bg-cyan-500 w-0 transition-all duration-300"></div>
+        </div>
     </div>
 
-    <div class="game-area">
-        <div class="robot-container" onclick="handleTap(event)">
-            <div class="energy-field"></div>
-            <div class="titan-bot">🤖</div>
+    <div id="name-modal">
+        <div class="bg-slate-900 border-2 border-cyan-500 p-8 rounded-3xl w-full max-w-sm text-center">
+            <p class="text-cyan-400 text-xs mb-2 tracking-widest">SISTEMA DETECTADO</p>
+            <h2 class="text-xl font-bold mb-6">IDENTIFÍCATE, PILOTO</h2>
+            <input type="text" id="user-name" placeholder="Tu Alias..." class="w-full bg-black border border-cyan-800 p-4 rounded-xl mb-6 text-center outline-none focus:border-cyan-400 text-cyan-400">
+            <button onclick="startGame()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-4 rounded-xl font-black shadow-[0_0_20px_rgba(8,145,178,0.5)]">ACTIVAR ROBOT</button>
         </div>
     </div>
 
-    <div class="energy-section">
-        <div class="flex justify-between text-[10px] font-bold mb-2 uppercase tracking-tighter">
-            <span>Energía del Sistema</span>
-            <span><span id="energy-val">1000</span> / 1000</span>
+    <div class="h-screen flex flex-col p-6">
+        <div class="flex justify-between items-center mb-10">
+            <div>
+                <p class="text-[10px] text-cyan-500 font-bold uppercase">Piloto Activo</p>
+                <h2 id="display-name" class="text-lg font-black tracking-tighter">---</h2>
+            </div>
+            <div class="bg-black/50 border border-cyan-900 px-4 py-2 rounded-2xl text-xl font-black text-cyan-400">
+                💎 <span id="balance">0.00</span>
+            </div>
         </div>
-        <div class="energy-bar-bg">
-            <div id="energy-fill" class="energy-fill"></div>
+
+        <div class="flex-1 flex flex-col items-center justify-center relative" id="click-area">
+            <div class="robot-main" onclick="tapRobot(event)"></div>
+            <p class="mt-10 text-cyan-400/50 text-[10px] animate-pulse">TOCA EL TITÁN PARA GENERAR</p>
         </div>
-        <button id="ad-btn" onclick="window.open('https://omg10.com')" class="hidden mt-4 w-full py-3 bg-cyan-500 rounded-xl font-black text-xs text-slate-900 animate-pulse">
-            RECARGAR ENERGÍA (VER AD)
-        </button>
+
+        <div class="mb-10 space-y-2">
+            <div class="flex justify-between text-[10px] font-bold">
+                <span>NIVEL DE ENERGÍA</span>
+                <span id="energy-text">1000 / 1000</span>
+            </div>
+            <div class="energy-bar"><div id="energy-fill" class="energy-fill"></div></div>
+            <button id="ad-btn" onclick="window.open('https://omg10.com')" class="hidden w-full py-4 bg-red-600 rounded-2xl font-black text-xs mt-4 animate-bounce">
+                🔋 RECARGA CON ANUNCIO (VER AD)
+            </button>
+        </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        let balance = parseFloat(localStorage.getItem('tap_balance')) || 0;
-        let energy = parseInt(localStorage.getItem('tap_energy')) || 1000;
+        let balance = parseFloat(localStorage.getItem('tt_bal')) || 0;
+        let energy = parseInt(localStorage.getItem('tt_nrg')) || 1000;
+        let pilot = localStorage.getItem('tt_name');
 
-        function handleTap(e) {
-            if (energy <= 0) {
+        function tapRobot(e) {
+            if (energy < 10) {
                 document.getElementById('ad-btn').classList.remove('hidden');
                 return;
             }
 
-            // Actualizar Datos
             balance += 0.15;
             energy -= 10;
-            
-            // Guardar
-            localStorage.setItem('tap_balance', balance);
-            localStorage.setItem('tap_energy', energy);
+            save();
 
-            // Efecto Visual +0.15
-            const point = document.createElement('div');
-            point.innerText = "+0.15";
-            point.className = 'floating-point';
-            const rect = e.currentTarget.getBoundingClientRect();
-            point.style.left = (e.clientX - rect.left) + 'px';
-            point.style.top = (e.clientY - rect.top) + 'px';
-            e.currentTarget.appendChild(point);
+            // Número flotante
+            const n = document.createElement('div');
+            n.innerText = "+0.15";
+            n.className = 'floating-score';
+            n.style.left = (e.clientX - 30) + 'px';
+            n.style.top = (e.clientY - 50) + 'px';
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 800);
 
-            // Haptic Feedback
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
             updateUI();
-            setTimeout(() => point.remove(), 800);
+        }
+
+        function startGame() {
+            let n = document.getElementById('user-name').value;
+            if(n.length > 2) {
+                localStorage.setItem('tt_name', n);
+                pilot = n;
+                document.getElementById('name-modal').style.display = 'none';
+                document.getElementById('display-name').innerText = pilot;
+            }
+        }
+
+        function save() {
+            localStorage.setItem('tt_bal', balance);
+            localStorage.setItem('tt_nrg', energy);
         }
 
         function updateUI() {
             document.getElementById('balance').innerText = balance.toFixed(2);
-            document.getElementById('energy-val').innerText = energy;
-            document.getElementById('energy-fill').style.width = (energy / 10) + '%';
-
-            if (energy > 0) {
-                document.getElementById('ad-btn').classList.add('hidden');
-            }
+            document.getElementById('energy-text').innerText = energy + " / 1000";
+            document.getElementById('energy-fill').style.width = (energy / 10) + "%";
+            if(energy >= 10) document.getElementById('ad-btn').classList.add('hidden');
         }
 
-        // Recuperar energía poco a poco (1 punto cada segundo)
-        setInterval(() => {
-            if (energy < 1000) {
-                energy += 1;
-                updateUI();
-            }
-        }, 1000);
-
+        // Carga Inicial Estilo Video
         window.onload = () => {
-            tg.expand();
+            let p = 0;
+            let iv = setInterval(() => {
+                p += 5;
+                document.getElementById('load-bar').style.width = p + "%";
+                if(p >= 100) {
+                    clearInterval(iv);
+                    document.getElementById('splash').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('splash').style.display = 'none';
+                        if(!pilot) document.getElementById('name-modal').style.display = 'flex';
+                        else document.getElementById('display-name').innerText = pilot;
+                    }, 800);
+                }
+            }, 100);
             updateUI();
         };
+
+        // Recuperación de energía
+        setInterval(() => { if(energy < 1000) { energy += 2; updateUI(); } }, 2000);
     </script>
 </body>
 </html>

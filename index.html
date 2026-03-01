@@ -3,124 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TITAN B: INTRO FIX</title>
+    <title>TITAN B: MINING SHIP</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
-        
-        /* VIDEO DE INTRO/FONDO */
-        #video-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1; background: #000;
-        }
-        #bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); }
-
-        /* INTERFAZ */
-        #gui { position: absolute; top: 20px; left: 20px; z-index: 10; color: #00f2ff; pointer-events: none; }
-        .bar-bg { width: 180px; height: 10px; border: 1px solid #00f2ff; margin-top: 10px; background: rgba(0,0,0,0.5); }
-        #energy-bar { width: 100%; height: 100%; background: #00f2ff; }
-        
-        /* BOTÓN DE ARRANQUE (Solo sale si el video no arranca solo) */
-        #start-prompt {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #00f2ff; border: 2px solid #00f2ff; padding: 20px;
-            background: rgba(0,0,0,0.8); cursor: pointer; z-index: 200;
-        }
+        body { margin: 0; background: #050505; overflow: hidden; font-family: sans-serif; }
+        #gui { position: absolute; top: 15px; left: 15px; color: #0f0; z-index: 10; text-shadow: 0 0 8px #0f0; pointer-events: none; }
+        #shop { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; }
+        button { background: #0f0; color: #000; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; border-radius: 8px; box-shadow: 0 0 15px #0f0; font-size: 14px; }
+        .token-float { position: absolute; color: #0f0; font-weight: bold; pointer-events: none; animation: floatUp 2s forwards; }
+        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
     </style>
 </head>
 <body>
 
-    <div id="start-prompt" onclick="iniciarTodo()">TOCA PARA INICIAR SISTEMA</div>
-
-    <div id="video-container">
-        <video id="bg-video" loop muted playsinline>
-            <source src="intro.mp4" type="video/mp4">
-        </video>
+    <div id="gui">
+        <h2 style="margin:0;">SISTEMA MINERO</h2>
+        <p>T-COINS: <span id="wallet">0</span></p>
+        <p id="status" style="color: #ff3333; font-size: 12px;">ESTADO: DESCONECTADA</p>
     </div>
 
-    <div id="gui" style="display:none;">
-        <h1>TITAN B: REVOLUTION</h1>
-        <p>T-COINS: <span id="coin-txt">0</span></p>
-        <div class="bar-bg"><div id="energy-bar"></div></div>
+    <div id="shop">
+        <button id="buy-btn" onclick="activarMinado()">ENCENDER MOTORES</button>
     </div>
 
     <script>
-        function iniciarTodo() {
-            document.getElementById('start-prompt').style.display = 'none';
-            document.getElementById('gui').style.display = 'block';
-            const v = document.getElementById('bg-video');
-            v.play();
-        }
+        let tcoins = parseInt(localStorage.getItem('tcoins')) || 0;
+        let isMining = false;
 
-        // --- MOTOR DEL JUEGO ---
-        let coins = parseInt(localStorage.getItem('tcoins')) || 0;
-        let energy = 100;
+        // --- 1. CONFIGURACIÓN DE ESCENA ---
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        scene.background = new THREE.Color(0x020205); // Fondo azul espacial muy oscuro
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+        // --- 2. ILUMINACIÓN (ESTO ES LO QUE HACÍA QUE SE VIERA NEGRO) ---
+        const luzAmbiente = new THREE.AmbientLight(0xffffff, 1.2); // Luz base fuerte
+        scene.add(luzAmbiente);
 
-        const textureLoader = new THREE.TextureLoader();
-        let robot;
-        // Cargamos tu NANO SAGE (robot1.png)
-        textureLoader.load('robot1.png', (tex) => {
-            const mat = new THREE.SpriteMaterial({ map: tex });
-            robot = new THREE.Sprite(mat);
-            robot.scale.set(4.5, 4.5, 1);
-            scene.add(robot);
-        });
+        const luzPuntual = new THREE.PointLight(0x00ff00, 2, 50); // Luz verde de la nave
+        luzPuntual.position.set(5, 5, 5);
+        scene.add(luzPuntual);
 
-        window.addEventListener('mousedown', () => {
-            if(energy >= 5) {
-                energy -= 5; coins += 10;
-                localStorage.setItem('tcoins', coins);
-                document.getElementById('coin-txt').innerText = coins;
-                document.getElementById('energy-bar').style.width = energy + "%";
-            }
-        });
+        // --- 3. CONSTRUCCIÓN DE LA NAVE VERDE ---
+        const nave = new THREE.Group();
+        const matVerde = new THREE.MeshPhongMaterial({ color: 0x00ff00, flatShading: true, shininess: 50 });
+        const matFuego = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Motores amarillos
 
-        camera.position.z = 5;
+        // Cuerpo principal (un cono más grande para que se vea)
+        const cuerpo = new THREE.Mesh(new THREE.ConeGeometry(1.2, 3.5, 4), matVerde);
+        cuerpo.rotation.x = Math.PI / 2;
+        nave.add(cuerpo);
+
+        // Alas
+        const alas = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 1), matVerde);
+        alas.position.z = -0.5;
+        nave.add(alas);
+
+        // Propulsores (Los que "prenden")
+        const propL = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.5), matFuego);
+        propL.position.set(-0.5, 0, -1.8);
+        propL.rotation.x = Math.PI / 2;
+        
+        const propR = propL.clone();
+        propR.position.x = 0.5;
+        
+        nave.add(propL, propR);
+        scene.add(nave);
+
+        // --- 4. ESTRELLAS DE FONDO ---
+        const starGeo = new THREE.BufferGeometry();
+        const starPos = [];
+        for(let i=0; i<800; i++) starPos.push((Math.random()-0.5)*100, (Math.random()-0.5)*100, (Math.random()-0.5)*100);
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.1}));
+        scene.add(stars);
+
+        // --- 5. POSICIÓN DE CÁMARA ---
+        camera.position.set(0, 2, 6);
+        camera.lookAt(0, 0, 0);
+
+        // --- 6. LÓGICA DE JUEGO ---
+        function activarMinado() {
+            isMining = true;
+            document.getElementById('buy-btn').style.display = 'none';
+            document.getElementById('status').innerText = "ESTADO: MINANDO +50/3s";
+            document.getElementById('status').style.color = "#0f0";
+            setInterval(generarCoins, 3000); // Mina cada 3 segundos para que lo veas rápido
+        }
+
+        function generarCoins() {
+            tcoins += 50;
+            localStorage.setItem('tcoins', tcoins);
+            document.getElementById('wallet').innerText = tcoins;
+            
+            // Texto flotante lateral
+            const span = document.createElement('div');
+            span.className = 'token-float';
+            span.style.left = "60%";
+            span.style.top = "50%";
+            span.innerText = "+50 T-COINS";
+            document.body.appendChild(span);
+            setTimeout(() => span.remove(), 2000);
+        }
+
+        // --- 7. ANIMACIÓN ---
         function animate() {
             requestAnimationFrame(animate);
-            if(robot) robot.position.y = Math.sin(Date.now() * 0.002) * 0.1;
+            nave.rotation.y += 0.01; // La nave gira para que se vea el 3D
+            
+            if(isMining) {
+                // Los motores parpadean cuando minas
+                const s = 1 + Math.sin(Date.now() * 0.02) * 0.3;
+                propL.scale.set(s, s, s);
+                propR.scale.set(s, s, s);
+                nave.position.y = Math.sin(Date.now() * 0.005) * 0.2;
+            }
+            
             renderer.render(scene, camera);
         }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        document.getElementById('wallet').innerText = tcoins;
         animate();
-    </script>   <div id="navbar" style="position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; z-index: 1000;">
-    <div onclick="irA('home')" style="text-align:center; color:#fff; cursor:pointer;">
-        <div style="font-size:20px;">🏠</div>
-        <span style="font-size:10px;">Home</span>
-    </div>
-    <div onclick="irA('earnings')" style="text-align:center; color:#fff; cursor:pointer;">
-        <div style="background:#4e54ff; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-top:-20px; box-shadow: 0 0 15px #4e54ff;">
-            <img src="https://img.icons8.com/ios-filled/50/ffffff/ufo.png" style="width:25px;">
-        </div>
-        <span style="font-size:10px; color:#4e54ff;">Earnings</span>
-    </div>
-    <div style="text-align:center; color:#888;">
-        <div style="font-size:20px;">🚀</div>
-        <span style="font-size:10px;">Accelerate</span>
-    </div>
-</div>
-
-<iframe id="ventana-nave" src="nave.html" style="position:fixed; top:0; left:0; width:100%; height:calc(100% - 70px); border:none; display:none; z-index:500;"></iframe>
-
-<script>
-function irA(seccion) {
-    const naveFrame = document.getElementById('ventana-nave');
-    const guiPrincipal = document.getElementById('gui'); // Tu HUD de monedas actual
-    
-    if(seccion === 'earnings') {
-        naveFrame.style.display = 'block';
-        if(guiPrincipal) guiPrincipal.style.opacity = '0.3'; // Se oscurece el fondo
-    } else {
-        naveFrame.style.display = 'none';
-        if(guiPrincipal) guiPrincipal.style.opacity = '1';
-    }
-}
-</script>
- </body>
+    </script>
+</body>
 </html>

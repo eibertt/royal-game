@@ -3,27 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TITAN B - OS</title>
+    <title>TITAN B - SISTEMA OPERATIVO</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <video autoplay muted loop id="bg-video"><source src="fondo.mp4" type="video/mp4"></video>
+
+    <video autoplay muted loop id="bg-video">
+        <source src="fondo.mp4" type="video/mp4">
+    </video>
+
     <div class="overlay"></div>
 
     <div id="game-container">
         <div class="hologram-panel" style="display: flex; justify-content: space-between; padding: 15px; margin: 15px;">
-            <div><small style="color: #ff00de">T-COINS</small><div id="coin-balance" style="font-size: 1.8rem;">0</div></div>
-            <div style="text-align: right;"><small>RANGO</small><div id="rank-display">RECLUTA</div></div>
+            <div>
+                <small style="color: #ff00de">T-COINS</small>
+                <div id="coin-balance" style="font-size: 1.8rem; font-weight: bold;">0</div>
+            </div>
+            <div style="text-align: right;">
+                <small>RANGO ACTUAL</small>
+                <div id="rank-display" style="color: #00e5ff;">RECLUTA</div>
+            </div>
         </div>
 
         <div class="robot-core">
+            <div id="effect-container"></div>
             <div class="energy-ring" id="heat-ring"></div>
-            <img src="robot1.png" id="robot-display" onclick="handleTap(event)">
+            <img src="robot1.png" id="robot-display" onclick="handleTap(event)" style="cursor: pointer;">
         </div>
 
         <div class="hologram-panel" style="margin: 15px; padding: 10px;">
             <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-                <span>SISTEMA: <span id="system-status">ESTABLE</span></span>
+                <span>ESTADO: <span id="system-status" style="color: #00e5ff;">ONLINE</span></span>
                 <span id="xp-text">XP: 0 / 4500</span>
             </div>
             <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; margin-top: 5px; border: 1px solid #00e5ff;">
@@ -34,45 +45,27 @@
         <nav class="nav-bar">
             <div class="nav-item active" onclick="location.reload()">HOME</div>
             <div class="nav-item" onclick="jugarRuleta()">CASINO</div>
-            <div class="nav-item" style="color: #ffcc00;" onclick="abrirTienda()">SHIPS</div>
+            <div class="nav-item" style="color: #ffcc00; font-weight: bold;" onclick="abrirTienda()">SHIPS</div>
             <div class="nav-item" onclick="reclamarBonoReferido()">FRIENDS</div>
             <div class="nav-item" onclick="conectarBilletera()">WALLET</div>
         </nav>
     </div>
 
-                <script>
-        console.log("Iniciando carga de módulos TITAN B...");
-        window.onerror = function(msg, url, line) {
-            alert("ERROR DETECTADO: " + msg + " en " + url + " LÍNEA: " + line);
-        };
-    </script>
-
-        <script src="game_logic.js?v=4"></script>
-    <script src="casino_logic.js?v=4"></script>
-    <script src="referrals.js?v=4"></script>
-    <script src="wallet_system.js?v=4"></script>
+    <script src="game_logic.js?v=6"></script>
+    <script src="casino_logic.js?v=6"></script>
+    <script src="referrals.js?v=6"></script>
+    <script src="wallet_system.js?v=6"></script>
 
     <script>
-        // Función de seguridad para esperar a que todo cargue
+        // Verificación de carga de sistemas
         window.onload = function() {
-            console.log("TITAN B: Sistemas en línea.");
-            document.getElementById('system-status').innerText = "SISTEMA: ONLINE";
+            console.log("TITAN B: Sistemas vinculados correctamente.");
+            const status = document.getElementById('system-status');
+            if(status) status.innerText = "ONLINE";
         };
 
         function abrirTienda() {
-            alert("Accediendo al Astillero... Cargando naves de $1 a $15 USDT");
-        }
-    </script>
-</body>
-</html>
-
-
-
-
-
-    <script>
-        function abrirTienda() {
-            alert("Accediendo al Astillero... Cargando naves de $1 a $15 USDT");
+            alert("ACCESO AL ASTILLERO:\nNaves disponibles desde $1 hasta $15 USDT.\n\nSube de nivel para desbloquear nuevos modelos.");
         }
     </script>
 </body>

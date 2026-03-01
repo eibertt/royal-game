@@ -9,7 +9,7 @@
 <body>
 
     <video autoplay muted loop id="bg-video">
-        <source src="fondo.mp4" type="video/mp4">
+        <source src="assets/fondo.mp4" type="video/mp4">
     </video>
 
     <div class="overlay"></div>
@@ -26,15 +26,12 @@
             </div>
         </div>
 
-        <div class="robot-core">
-            <div id="effect-container"></div>
-            <div class="energy-ring" id="heat-ring"></div>
-            <img src="robot1.png" id="robot-display" onclick="handleTap(event)" style="cursor: pointer;">
-        </div>
+        <div id="robot-container" style="width: 100%; height: 350px; margin: 20px 0; position: relative; z-index: 5;" onclick="if(window.handleRobotTap) window.handleRobotTap(); if(typeof handleTap === 'function') handleTap(event);">
+            </div>
 
         <div class="hologram-panel" style="margin: 15px; padding: 10px;">
             <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-                <span>ESTADO: <span id="system-status" style="color: #00e5ff;">ONLINE</span></span>
+                <span>ESTADO: <span id="system-status" style="color: #00e5ff;">INICIANDO MOTOR 3D...</span></span>
                 <span id="xp-text">XP: 0 / 4500</span>
             </div>
             <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; margin-top: 5px; border: 1px solid #00e5ff;">
@@ -50,29 +47,30 @@
             <div class="nav-item" onclick="conectarBilletera()">WALLET</div>
         </nav>
     </div>
-     <script src="audio_engine.js?v=8"></script>
-    <script src="vfx_system.js?v=8"></script>
-    
-    <script src="game_logic.js?v=8"></script>
-    <script src="casino_logic.js?v=8"></script>
-    <script src="referrals.js?v=8"></script>
-    <script src="wallet_system.js?v=8"></script>
 
-    <script src="game_logic.js?v=6"></script>
-    <script src="casino_logic.js?v=6"></script>
-    <script src="referrals.js?v=6"></script>
-    <script src="wallet_system.js?v=6"></script
+    <script type="module" src="assets/robot_3d.js?v=12"></script>
+    
+    <script src="config.js?v=12"></script>
+    <script src="render_engine.js?v=12"></script>
+    <script src="game_logic.js?v=12"></script>
+    <script src="casino_logic.js?v=12"></script>
+    <script src="referrals.js?v=12"></script>
+    <script src="wallet_system.js?v=12"></script>
 
     <script>
-        // Verificación de carga de sistemas
+        // Verificación de carga final
         window.onload = function() {
-            console.log("TITAN B: Sistemas vinculados correctamente.");
+            console.log("TITAN B: Todos los sistemas y motores 3D vinculados.");
             const status = document.getElementById('system-status');
-            if(status) status.innerText = "ONLINE";
+            if(status) {
+                status.innerText = "ONLINE";
+                status.style.color = "#00ff88"; // Verde neón al estar listo
+            }
         };
 
+        // Respaldo de la tienda en caso de que shop_system.js tarde en cargar
         function abrirTienda() {
-            alert("ACCESO AL ASTILLERO:\nNaves disponibles desde $1 hasta $15 USDT.\n\nSube de nivel para desbloquear nuevos modelos.");
+            alert("--- ASTILLERO IMPERIAL ---\n\n1. Scout C-1: $1 USDT (+100 T-Coins/hr)\n2. Heavy Miner: $5 USDT (+600 T-Coins/hr)\n3. TITAN A-15: $15 USDT (+2500 T-Coins/hr)\n\nInvita amigos para ganar un bono de +5000 T-Coins.");
         }
     </script>
 </body>

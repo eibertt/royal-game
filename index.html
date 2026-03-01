@@ -5,134 +5,162 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --purple: #9d00ff; }
+        :root { --neon-cyan: #00f2ff; --neon-purple: #9d00ff; --dark-space: #02020a; }
+        
         body { 
-            background: #050510; font-family: 'Orbitron', sans-serif; color: white; 
-            margin: 0; overflow: hidden; height: 100vh;
-            background-image: 
-                linear-gradient(to bottom, rgba(5,5,16,0.8), rgba(5,5,16,0.9)),
-                url('https://wallpaperaccess.com/full/491173.jpg'); /* Ciudad Cyberpunk */
-            background-size: cover; background-position: center;
+            background: var(--dark-space); font-family: 'Orbitron', sans-serif; 
+            color: white; margin: 0; overflow: hidden; height: 100vh;
         }
 
-        /* NAVEGACIÓN PRO (ESTILO HAMSTER KOMBAT) */
+        /* FONDO CIBERNÉTICO PROFESIONAL */
+        .cyber-universe {
+            position: fixed; inset: 0;
+            background-image: 
+                linear-gradient(to bottom, rgba(2,2,10,0.7), rgba(10,0,20,0.9)),
+                url('https://images.unsplash.com/photo-1614728263952-84ea256f9679?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover; background-position: center;
+            z-index: -1; animation: backgroundShift 20s infinite linear;
+        }
+        @keyframes backgroundShift { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
+
+        /* HUD DE DATOS (CRISTAL ESMERILADO) */
+        .hud-glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 242, 255, 0.1);
+            border-radius: 20px; padding: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* EL ROBOT TITÁN (TRANSFORMER STYLE) */
+        .robot-stage {
+            width: 100%; height: 55vh; display: flex; align-items: center; justify-content: center;
+            position: relative; z-index: 10; margin-top: 15px;
+        }
+        .titan-render {
+            width: 90%; max-width: 400px;
+            filter: drop-shadow(0 0 40px rgba(0, 242, 255, 0.4));
+            animation: industrial-breath 4s infinite ease-in-out;
+            transition: transform 0.1s cubic-bezier(0, 0.5, 0.5, 1);
+            user-select: none;
+        }
+        @keyframes industrial-breath {
+            0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+            50% { transform: scale(1.03) translateY(-10px) rotate(1deg); filter: brightness(1.2); }
+        }
+        .titan-render:active { transform: scale(0.9) translateY(10px); }
+
+        /* NAVEGACIÓN PROFESIONAL (ESTILO DAPP 2026) */
         nav {
-            position: fixed; bottom: 15px; left: 15px; right: 15px; height: 80px;
-            background: rgba(15, 15, 30, 0.95); backdrop-filter: blur(10px);
-            border-radius: 25px; border: 1px solid rgba(0, 242, 255, 0.3);
+            position: fixed; bottom: 15px; left: 15px; right: 15px; height: 85px;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px);
+            border-radius: 28px; border: 1px solid rgba(157, 0, 255, 0.3);
             display: flex; justify-content: space-around; align-items: center; z-index: 1000;
         }
-        .nav-item { opacity: 0.4; transition: 0.3s; text-align: center; font-size: 8px; }
-        .nav-item.active { opacity: 1; color: var(--neon); transform: translateY(-5px); }
-        .nav-icon { width: 30px; height: 30px; margin-bottom: 4px; filter: drop-shadow(0 0 5px var(--neon)); }
-
-        /* VISTAS DINÁMICAS */
-        .page { display: none; height: 80vh; padding: 20px; overflow-y: auto; }
-        .page.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* EL ROBOT TITÁN (Centrado y Grande) */
-        .robot-container {
-            width: 100%; height: 50vh; display: flex; align-items: center; justify-content: center;
-            position: relative; margin-top: 20px;
+        .nav-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            color: #444; transition: 0.4s; cursor: pointer;
         }
-        .robot-img {
-            width: 80%; max-width: 320px; 
-            filter: drop-shadow(0 0 30px var(--neon));
-            animation: breathe 4s infinite ease-in-out;
-            cursor: pointer; z-index: 10;
+        .nav-btn.active { color: var(--neon-cyan); transform: translateY(-8px); }
+        .nav-icon-box {
+            width: 44px; height: 44px; border-radius: 14px;
+            background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;
+            border: 1px solid transparent; overflow: hidden;
         }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05) translateY(-10px); } }
+        .active .nav-icon-box { border-color: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan); background: rgba(0,242,255,0.1); }
+        .nav-img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* CARTAS DE NAVES (EARNINGS) */
-        .ship-card {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(0, 242, 255, 0.1);
-            border-radius: 20px; padding: 15px; margin-bottom: 15px;
-            display: flex; align-items: center; gap: 15px;
-        }
-        .ship-img { width: 60px; height: 60px; border-radius: 12px; border: 1px solid var(--neon); }
+        /* PANTALLAS */
+        .view { display: none; height: 80vh; padding: 20px; overflow-y: auto; z-index: 20; position: relative; }
+        .view.active { display: block; animation: viewEnter 0.5s ease; }
+        @keyframes viewEnter { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-        /* MONEDAS FLOTANTES */
-        .tap-effect {
-            position: absolute; color: var(--neon); font-weight: 900; font-size: 28px;
-            pointer-events: none; animation: floatUp 0.6s forwards; z-index: 100;
+        /* EFECTO DE IMPACTO */
+        .tap-number {
+            position: absolute; color: var(--neon-cyan); font-weight: 900; font-size: 32px;
+            pointer-events: none; animation: flyOut 0.7s forwards; z-index: 100;
+            text-shadow: 0 0 10px var(--neon-cyan);
         }
-        @keyframes floatUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-100px); } }
+        @keyframes flyOut { to { opacity: 0; transform: translateY(-150px) scale(1.5); } }
     </style>
 </head>
 <body>
 
+    <div class="cyber-universe"></div>
+
     <div class="p-6 flex justify-between items-start">
-        <div>
-            <p id="rank-name" class="text-[10px] text-purple-400 font-black tracking-widest">RANGO: RECLUTA</p>
+        <div class="hud-glass">
+            <p id="rank-label" class="text-[9px] text-purple-400 font-black tracking-widest">NÚCLEO: ACTIVO</p>
             <h1 class="text-4xl font-black text-white" id="balance">0.000</h1>
-            <p class="text-[8px] text-cyan-500">T-COINS EXTRAÍDOS</p>
+            <p class="text-[9px] text-cyan-500">T-COINS EXTRAÍDOS</p>
         </div>
         <div class="text-right">
-            <span class="text-[10px] block mb-1">ENERGÍA</span>
-            <div class="w-24 h-2 bg-gray-900 rounded-full border border-cyan-900 overflow-hidden">
-                <div id="energy-bar" class="h-full bg-cyan-500" style="width: 100%"></div>
+            <div class="hud-glass py-2 px-4">
+                <span class="text-[10px] block font-bold">ENERGÍA</span>
+                <div class="w-20 h-1.5 bg-gray-900 rounded-full mt-1">
+                    <div id="energy-bar" class="h-full bg-cyan-400" style="width: 100%"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="page-home" class="page active">
-        <div class="robot-container" onclick="doTap(event)">
-            <img id="robot-img" src="https://www.pngmart.com/files/11/Sci-Fi-Robot-PNG-Transparent-Image.png" class="robot-img">
+    <div id="view-home" class="view active">
+        <div class="robot-stage" onclick="triggerTap(event)">
+            <img id="titan-img" src="https://www.pngmart.com/files/11/Sci-Fi-Robot-PNG-Transparent-Image.png" class="titan-render">
         </div>
-        <div class="text-center mt-4">
-            <p class="text-cyan-400 text-[10px] animate-pulse">TOQUE EL NÚCLEO PARA MINAR</p>
+        <div class="text-center">
+            <p class="text-cyan-400 text-[11px] font-black animate-pulse tracking-[4px]">SISTEMA DE MINADO TÁCTIL</p>
         </div>
     </div>
 
-    <div id="page-earnings" class="page">
-        <h2 class="text-xl font-black text-cyan-400 mb-6 border-b border-cyan-900 pb-2">FLOTA DE MINERÍA</h2>
+    <div id="view-earnings" class="view">
+        <h2 class="text-2xl font-black text-cyan-400 mb-6 border-b-2 border-cyan-900 pb-2">FLOTA DE EXTRACCIÓN</h2>
         
-        <div class="ship-card">
-            <img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=200" class="ship-img">
+        <div class="hud-glass flex items-center gap-4 mb-4 border-l-4 border-l-cyan-500">
+            <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=200" class="w-20 h-20 rounded-xl object-cover">
             <div class="flex-1">
-                <h3 class="font-bold text-sm">DRILL-BOT V1</h3>
-                <p class="text-[10px] text-gray-500">Minado: 10/h</p>
+                <h3 class="font-bold text-sm">DRILL-MECHA V1</h3>
+                <p class="text-[10px] text-gray-400">+10 T/h</p>
             </div>
-            <button class="bg-cyan-500 text-black font-black px-4 py-2 rounded-xl text-[10px]">2 USDT</button>
+            <button class="bg-cyan-500 text-black font-black px-4 py-2 rounded-xl text-xs">2 USDT</button>
         </div>
 
-        <div class="ship-card border-amber-600 bg-amber-900/10">
-            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=200" class="ship-img">
+        <div class="hud-glass flex items-center gap-4 mb-4 border-l-4 border-l-amber-500">
+            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=200" class="w-20 h-20 rounded-xl object-cover">
             <div class="flex-1">
-                <h3 class="font-bold text-sm text-amber-500">TITÁN GALAXY</h3>
-                <p class="text-[10px] text-gray-400">Minado: 20,000/h</p>
+                <h3 class="font-bold text-sm text-amber-500">STAR-MINER PRO</h3>
+                <p class="text-[10px] text-gray-400">+20,000 T/h</p>
             </div>
-            <button class="bg-amber-600 text-black font-black px-4 py-2 rounded-xl text-[10px]">15 USDT</button>
+            <button class="bg-amber-600 text-black font-black px-4 py-2 rounded-xl text-xs">15 USDT</button>
         </div>
     </div>
 
-    <div id="page-group" class="page"><h2 class="text-center mt-20 text-purple-500">CLANES CIBERNÉTICOS</h2></div>
-    <div id="page-accelerate" class="page"><h2 class="text-center mt-20 text-red-500">ACELERADORES</h2></div>
-    <div id="page-wallet" class="page"><h2 class="text-center mt-20 text-green-500">BILLETERA USDT</h2></div>
+    <div id="view-group" class="view"><h2 class="text-center mt-20 text-2xl font-black">SISTEMA DE CLANES</h2></div>
+    <div id="view-accelerate" class="view"><h2 class="text-center mt-20 text-2xl font-black text-red-500">SOBRECARGA (BOOST)</h2></div>
+    <div id="view-wallet" class="view"><h2 class="text-center mt-20 text-2xl font-black text-green-500">BILLETERA QUANTUM</h2></div>
 
     <nav>
-        <div class="nav-item active" onclick="navTo('home', this)">
-            <img src="https://cdn-icons-png.flaticon.com/512/3563/3563417.png" class="nav-icon">
-            <div>HOME</div>
+        <div class="nav-btn active" onclick="navTo('home', this)">
+            <div class="nav-icon-box"><img src="https://cdn-icons-png.flaticon.com/512/3563/3563417.png" class="nav-img"></div>
+            <span class="text-[8px] font-black">HOME</span>
         </div>
-        <div class="nav-item" onclick="navTo('group', this)">
-            <img src="https://cdn-icons-png.flaticon.com/512/1189/1189132.png" class="nav-icon">
-            <div>GROUP</div>
+        <div class="nav-btn" onclick="navTo('group', this)">
+            <div class="nav-icon-box"><img src="https://cdn-icons-png.flaticon.com/512/1189/1189132.png" class="nav-img"></div>
+            <span class="text-[8px] font-black">GROUP</span>
         </div>
-        <div class="nav-item" onclick="navTo('earnings', this)">
-            <img src="https://cdn-icons-png.flaticon.com/512/2534/2534204.png" class="nav-icon">
-            <div>EARN</div>
+        <div class="nav-btn" onclick="navTo('earnings', this)">
+            <div class="nav-icon-box"><img src="https://cdn-icons-png.flaticon.com/512/2534/2534204.png" class="nav-img"></div>
+            <span class="text-[8px] font-black">EARN</span>
         </div>
-        <div class="nav-item" onclick="navTo('accelerate', this)">
-            <img src="https://cdn-icons-png.flaticon.com/512/3163/3163624.png" class="nav-icon">
-            <div>BOOST</div>
+        <div class="nav-btn" onclick="navTo('accelerate', this)">
+            <div class="nav-icon-box"><img src="https://cdn-icons-png.flaticon.com/512/3163/3163624.png" class="nav-img"></div>
+            <span class="text-[8px] font-black">BOOST</span>
         </div>
-        <div class="nav-item" onclick="navTo('wallet', this)">
-            <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" class="nav-icon">
-            <div>WALLET</div>
+        <div class="nav-btn" onclick="navTo('wallet', this)">
+            <div class="nav-icon-box"><img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" class="nav-img"></div>
+            <span class="text-[8px] font-black">WALLET</span>
         </div>
     </nav>
 
@@ -141,45 +169,49 @@
         let energy = 2000;
         let tg = window.Telegram.WebApp;
 
-        function navTo(pageId, el) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            document.getElementById('page-' + pageId).classList.add('active');
+        function navTo(page, el) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('view-' + page).classList.add('active');
             el.classList.add('active');
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         }
 
-        function doTap(e) {
-            if(energy < 10) return;
+        function triggerTap(e) {
+            if(energy < 10) {
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                return;
+            }
             balance += 0.001;
             energy -= 10;
             
-            // Efecto de moneda
-            const t = document.createElement('div');
-            t.innerText = "+0.001";
-            t.className = 'tap-effect';
-            t.style.left = e.clientX + 'px';
-            t.style.top = e.clientY + 'px';
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 600);
+            // Efecto moneda flotante
+            const num = document.createElement('div');
+            num.innerText = "+0.001";
+            num.className = 'tap-number';
+            num.style.left = e.clientX + 'px';
+            num.style.top = e.clientY + 'px';
+            document.body.appendChild(num);
+            setTimeout(() => num.remove(), 700);
 
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
-            updateUI();
+            updateHUD();
         }
 
-        function updateUI() {
+        function updateHUD() {
             document.getElementById('balance').innerText = balance.toFixed(3);
             document.getElementById('energy-bar').style.width = (energy/20) + "%";
             
-            // Cambio de Rango y Robot Real
+            // Evolución de la Estrella
             if(balance >= 0.5) {
-                document.getElementById('rank-name').innerText = "RANGO: SARGENTO";
-                document.getElementById('robot-img').src = "https://www.pngmart.com/files/11/Sci-Fi-Robot-PNG-Photos.png";
+                document.getElementById('rank-label').innerText = "NÚCLEO: COMANDANTE";
+                document.getElementById('rank-label').style.color = "#00f2ff";
+                document.getElementById('titan-img').src = "https://www.pngmart.com/files/11/Sci-Fi-Robot-PNG-Photos.png";
             }
         }
 
-        setInterval(() => { if(energy < 2000) { energy += 5; updateUI(); } }, 2000);
-        window.onload = () => { tg.expand(); updateUI(); };
+        setInterval(() => { if(energy < 2000) { energy += 5; updateHUD(); } }, 2000);
+        window.onload = () => { tg.expand(); updateHUD(); };
     </script>
 </body>
 </html>

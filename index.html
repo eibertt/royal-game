@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TITAN B: REVOLUTION</title>
+    <title>TITAN B: EVOLUTION</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; color: #00f2ff; }
-        #gui { position: absolute; top: 20px; left: 20px; z-index: 10; text-shadow: 0 0 10px #00f2ff; }
-        .bar-bg { width: 180px; height: 10px; border: 1px solid #00f2ff; margin-top: 10px; }
-        #energy-bar { width: 100%; height: 100%; background: #00f2ff; transition: 0.3s; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; color: #00f2ff; }
+        #gui { position: absolute; top: 20px; left: 20px; z-index: 10; pointer-events: none; }
+        .bar-bg { width: 180px; height: 10px; border: 1px solid #00f2ff; margin-top: 10px; background: rgba(0,242,255,0.1); }
+        #energy-bar { width: 100%; height: 100%; background: #00f2ff; transition: 0.3s; box-shadow: 0 0 10px #00f2ff; }
+        h1 { font-size: 20px; margin: 0; text-shadow: 0 0 10px #00f2ff; }
     </style>
 </head>
 <body>
@@ -20,80 +20,102 @@
         <p>T-COINS: <span id="coin-txt">0</span></p>
         <p>ENERGÍA: <span id="nrg-txt">100</span>%</p>
         <div class="bar-bg"><div id="energy-bar"></div></div>
+        <p id="rank" style="font-size: 10px; margin-top: 5px;">RANGO: RECLUTA</p>
     </div>
 
     <script>
         let coins = 0;
         let energy = 100;
+        let currentTier = 1;
 
-        // 1. ESCENA Y MOTOR
+        // 1. ESCENA 3D
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // 2. LUCES (Para que no se vea negro)
-        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-        const light = new THREE.DirectionalLight(0x00f2ff, 1);
-        light.position.set(5, 5, 5);
-        scene.add(light);
-
-        // 3. FONDO DE ESTRELLAS (Siempre cargará)
+        // 2. FONDO DE ESTRELLAS
         const starGeo = new THREE.BufferGeometry();
         const starPos = [];
-        for(let i=0; i<1500; i++) {
+        for(let i=0; i<2000; i++) {
             starPos.push(Math.random()*100-50, Math.random()*100-50, Math.random()*100-50);
         }
         starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0x00f2ff, size: 0.1})));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0x00f2ff, size: 0.05})));
 
-        // 4. CARGADOR DE ROBOTS (Tu Drive + Respaldo)
-        const loader = new THREE.GLTFLoader();
-        let robot;
-        
-        // Tu ID de Drive
-        const driveLink = "https://docs.google.com/uc?export=download&id=1mYO2_VCIEtHCicwIS76nSmoP8bMyNaAD";
-        // Modelo de respaldo (Si Drive falla)
-        const fallback = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RobotArm/glTF-Binary/RobotArm.glb";
+        // 3. CARGA DE ROBOTS (Tus archivos de GitHub)
+        const textureLoader = new THREE.TextureLoader();
+        let robotSprite;
 
-        function cargarRobot(url) {
-            loader.load(url, (gltf) => {
-                robot = gltf.scene;
-                robot.scale.set(2, 2, 2);
-                robot.position.y = -1.5;
-                scene.add(robot);
-            }, undefined, () => {
-                console.log("Drive falló, usando respaldo...");
-                if(url !== fallback) cargarRobot(fallback);
-            });
+        function cargarRobot(num) {
+            const texture = textureLoader.load(`robot${num}.png`);
+            if (robotSprite) scene.remove(robotSprite);
+            
+            const material = new THREE.SpriteMaterial({ map: texture });
+            robotSprite = new THREE.Sprite(material);
+            robotSprite.scale.set(4, 4, 1); // Ajusta el tamaño de tu imagen aquí
+            robotSprite.position.y = 0;
+            scene.add(robotSprite);
         }
-        cargarRobot(driveLink);
 
-        // 5. CLIC PARA MINAR
+        // Cargar el primer robot al iniciar
+        cargarRobot(1);
+
+        // 4. LÓGICA DE MINERÍA Y EVOLUCIÓN
         window.addEventListener('mousedown', () => {
             if(energy >= 5) {
                 energy -= 5;
                 coins += 10;
-                document.getElementById('coin-txt').innerText = coins;
-                document.getElementById('nrg-txt').innerText = energy;
-                document.getElementById('energy-bar').style.width = energy + "%";
                 
-                // Efecto visual al robot
-                if(robot) {
-                    robot.scale.set(2.2, 2.2, 2.2);
-                    setTimeout(() => robot.scale.set(2, 2, 2), 100);
-                }
+                // Efecto de "latido" al tocar
+                robotSprite.scale.set(4.5, 4.5, 1);
+                setTimeout(() => robotSprite.scale.set(4, 4, 1), 100);
+
+                actualizarProgreso();
             }
         });
+
+        function actualizarProgreso() {
+            document.getElementById('coin-txt').innerText = coins;
+            document.getElementById('nrg-txt').innerText = energy;
+            document.getElementById('energy-bar').style.width = energy + "%";
+
+            // Lógica de Evolución
+            if (coins >= 100 && currentTier === 1) {
+                currentTier = 2;
+                cargarRobot(2);
+                document.getElementById('rank').innerText = "RANGO: AVANZADO";
+                alert("¡EVOLUCIÓN! Has desbloqueado el Robot Tier 2");
+            } else if (coins >= 500 && currentTier === 2) {
+                currentTier = 3;
+                cargarRobot(3);
+                document.getElementById('rank').innerText = "RANGO: TITÁN";
+                alert("¡MÁXIMA EVOLUCIÓN! Robot Tier 3 en línea");
+            }
+        }
+
+        // Recuperación de energía pasiva
+        setInterval(() => {
+            if(energy < 100) { energy += 1; actualizarProgreso(); }
+        }, 1000);
 
         camera.position.z = 5;
         function animate() {
             requestAnimationFrame(animate);
-            if(robot) robot.rotation.y += 0.01;
+            if(robotSprite) {
+                // Animación de flotación suave
+                robotSprite.position.y = Math.sin(Date.now() * 0.002) * 0.1;
+            }
             renderer.render(scene, camera);
         }
         animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth/window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>

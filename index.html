@@ -6,18 +6,17 @@
     <title>TITAN B - ODYSSEY 3D</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Estilos críticos para asegurar que nada se mueva de su sitio */
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        /* Estilos críticos para que la galaxia y el robot no se muevan */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
         #galaxy-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(0,229,255,0.03) 0%, rgba(0,0,0,0.6) 100%); z-index: -1; pointer-events: none; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(0,229,255,0.05) 0%, rgba(0,0,0,0.6) 100%); z-index: -1; pointer-events: none; }
         #robot-view { width: 100%; height: 45vh; margin-top: 10px; position: relative; z-index: 5; }
-        #game-container { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; }
     </style>
 </head>
 <body>
 
     <div id="preloader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-        <div style="color:#00e5ff; font-family:monospace; margin-bottom:20px; letter-spacing:5px; text-shadow: 0 0 10px #00e5ff;">TITAN B - E.O.S LOADING</div>
+        <div style="color:#00e5ff; font-family:monospace; margin-bottom:20px; letter-spacing:5px;">TITAN B - LOADING</div>
         <div style="width:200px; height:2px; background:#111; border:1px solid #00e5ff;">
             <div id="load-bar" style="width:0%; height:100%; background:#00e5ff; box-shadow:0 0 15px #00e5ff;"></div>
         </div>
@@ -27,34 +26,34 @@
     <div class="overlay"></div>
 
     <div id="game-container">
-        <header class="hologram-panel" style="display:flex; justify-content:space-between; padding:15px; margin:10px; background: rgba(0,20,30,0.6); border: 1px solid rgba(0,229,255,0.3); backdrop-filter: blur(8px); border-radius: 10px;">
+        <header class="hologram-panel" style="display:flex; justify-content:space-between; padding:15px; margin:10px; background: rgba(0,20,30,0.6); border: 1px solid rgba(0,229,255,0.3); border-radius: 10px;">
             <div class="stat-box">
-                <small style="color:#ff00de; font-weight: bold; letter-spacing: 1px;">RECURSOS</small>
-                <div id="coin-balance" class="neon-text" style="font-size: 1.8rem; color: #00e5ff; font-family: monospace;">0.00</div>
+                <small style="color:#ff00de;">T-COINS</small>
+                <div id="coin-balance" style="font-size: 1.8rem; color: #00e5ff; font-family: monospace;">0.00</div>
             </div>
             <div class="stat-box" style="text-align:right;">
-                <small style="color: #aaa;">SISTEMA</small>
-                <div id="system-status" style="color:#00ff88; font-weight: bold; text-shadow: 0 0 5px #00ff88;">SYNC OK</div>
+                <small>SISTEMA</small>
+                <div id="system-status" style="color:#00ff88; font-weight: bold;">SYNC OK</div>
             </div>
         </header>
 
         <div id="robot-view"></div>
 
         <div class="hologram-panel" style="margin:10px; padding:15px; background: rgba(0,20,30,0.6); border: 1px solid rgba(0,229,255,0.3); border-radius: 10px;">
-            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#00e5ff; margin-bottom: 8px; font-family: monospace;">
-                <span>STATUS: <b id="rank-display">RECLUTA</b></span>
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#00e5ff; margin-bottom: 8px;">
+                <span>SYNC: <b id="rank-display">RECLUTA</b></span>
                 <span id="xp-text">0 / 5000 XP</span>
             </div>
-            <div class="progress-container" style="background: #080808; height: 8px; border-radius: 4px; border: 1px solid #222; overflow: hidden;">
-                <div id="xp-bar" class="progress-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00e5ff, #ff00de); box-shadow: 0 0 10px #00e5ff; transition: width 0.5s ease;"></div>
+            <div style="background: #080808; height: 6px; border-radius: 3px; overflow: hidden;">
+                <div id="xp-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00e5ff, #ff00de);"></div>
             </div>
         </div>
 
         <nav class="nav-bar">
             <div class="nav-item active" onclick="location.reload()">HOME</div>
             <div class="nav-item" onclick="abrirTienda()">SHIPS</div>
-            <div class="nav-item" onclick="abrirReferidos()">FRIENDS</div>
-            <div class="nav-item" onclick="conectarWallet()">WALLET</div>
+            <div class="nav-item">FRIENDS</div>
+            <div class="nav-item">WALLET</div>
         </nav>
     </div>
 
@@ -65,33 +64,33 @@
     <script type="module">
         import { init3D } from './robot_3d.js';
         
-        // Simulación de carga y arranque de motores
+        // Manejo del Preloader y arranque
         window.addEventListener('load', () => {
             const bar = document.getElementById('load-bar');
             let width = 0;
             const loader = setInterval(() => {
-                width += 4;
+                width += 5;
                 bar.style.width = width + '%';
                 
                 if (width >= 100) {
                     clearInterval(loader);
+                    // Damos tiempo a los archivos para sincronizar
                     setTimeout(() => {
                         document.getElementById('preloader').style.display = 'none';
-                        // Arrancamos el robot solo cuando el preloader se va
-                        init3D();
-                        console.log("TITAN B: Motores 3D en marcha.");
+                        init3D(); 
+                        console.log("TITAN B: Sistemas 3D Online.");
                     }, 400);
                 }
-            }, 30);
+            }, 50);
         });
 
-        // Conexión con la Tienda (Usa precios de config.js)
+        // Función global para la tienda (Conectada a config.js)
         window.abrirTienda = () => {
-            if(typeof TITAN_CONFIG !== 'undefined') {
+            if(window.TITAN_CONFIG) {
                 const s = TITAN_CONFIG.SHIPS;
-                alert(`ASTILLERO TITAN B\n\n1. ${s[0].name}: $${s[0].price_usdt} USDT\n2. ${s[1].name}: $${s[1].price_usdt} USDT\n3. ${s[2].name}: $${s[2].price_usdt} USDT`);
+                alert(`ASTILLERO:\n1. ${s[0].name}: $${s[0].price_usdt} USDT\n2. ${s[1].name}: $${s[1].price_usdt} USDT`);
             } else {
-                alert("Cargando base de datos de naves...");
+                alert("Sincronizando base de datos...");
             }
         };
     </script>
